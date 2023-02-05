@@ -105,7 +105,7 @@
      <number>0</number>
     </property>
     <widget class="QWidget" name="page">
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="test_update_search_LE">
       <property name="geometry">
        <rect>
         <x>190</x>
@@ -128,21 +128,11 @@
        <string>검색 (Line edit)</string>
       </property>
      </widget>
-     <widget class="QListView" name="listView">
-      <property name="geometry">
-       <rect>
-        <x>190</x>
-        <y>130</y>
-        <width>481</width>
-        <height>71</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>690</x>
-        <y>60</y>
+        <x>530</x>
+        <y>50</y>
         <width>141</width>
         <height>51</height>
        </rect>
@@ -278,6 +268,29 @@
       </property>
       <property name="text">
        <string>Test_contents : 문제 내용 / Test_URL : API에서 불러옴 / Test_Correct_answer : 리스트위젯에서 가져옴 / Test_subject :트리위젯텍스트</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="test_update_search">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>60</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>검색</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="test_item_list_widget">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>130</y>
+        <width>481</width>
+        <height>71</height>
+       </rect>
       </property>
      </widget>
     </widget>
