@@ -3,6 +3,8 @@ import requests
 import pprint
 import pandas as pd
 import bs4
+
+
 a= input("검색어를 입력해주세요")
 #인증키 입력
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
