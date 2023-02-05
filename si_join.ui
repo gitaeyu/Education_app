@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>667</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>74</y>
+     <width>561</width>
+     <height>671</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">
+background-color:white;</string>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="lb_login">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>120</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>굴림체</family>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(13, 140, 251, 255), stop:1 rgba(58, 224, 191));
+	border-radius: 10px;
+border:1px solid rgb(0, 81, 255);</string>
+    </property>
+    <property name="text">
+     <string>회원가입</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_input_id">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>180</y>
+      <width>160</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="tabletTracking">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(255, 255, 255);
+border:1px solid rgb(0, 81, 255);
+border-radius:10px;
+</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>ID 입력</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_input_pw">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>230</y>
+      <width>240</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="tabletTracking">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(255, 255, 255);
+border:1px solid rgb(0, 81, 255);
+border-radius:10px;
+</string>
+    </property>
+    <property name="echoMode">
+     <enum>QLineEdit::Password</enum>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>비밀번호 입력</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_check_pw">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>280</y>
+      <width>240</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(255, 255, 255);
+border:1px solid rgb(0, 81, 255);
+border-radius:10px;
+</string>
+    </property>
+    <property name="echoMode">
+     <enum>QLineEdit::Password</enum>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>비밀번호 확인</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_input_name">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>330</y>
+      <width>240</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(255, 255, 255);
+border:1px solid rgb(0, 81, 255);
+border-radius:10px;
+</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>이 름</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_check_id">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>180</y>
+      <width>75</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+color: white;
+background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(13, 140, 251, 255), stop:1 rgba(58, 224, 191));
+	border-radius: 10px;
+border:1px solid rgb(0, 81, 255);
+}
+QPushButton:hover {
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+QPushButton:pressed {
+border: 3px solid rgb(0, 81, 255);
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+
+</string>
+    </property>
+    <property name="text">
+     <string>중복확인</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_cancle">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>470</y>
+      <width>75</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+color: white;
+background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(13, 140, 251, 255), stop:1 rgba(58, 224, 191));
+	border-radius: 10px;
+border:1px solid rgb(0, 81, 255);
+}
+QPushButton:hover {
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+QPushButton:pressed {
+border: 3px solid rgb(0, 81, 255);
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+
+</string>
+    </property>
+    <property name="text">
+     <string>취소</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_finish">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>470</y>
+      <width>75</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+color: white;
+background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(13, 140, 251, 255), stop:1 rgba(58, 224, 191));
+	border-radius: 10px;
+border:1px solid rgb(0, 81, 255);
+}
+QPushButton:hover {
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+QPushButton:pressed {
+border: 3px solid rgb(0, 81, 255);
+color: white;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.857143, y2:0.857955, stop:0 rgba(10, 242, 251, 255), stop:1 rgba(224, 6, 159, 255));
+	border-radius: 10px;}
+
+</string>
+    </property>
+    <property name="text">
+     <string>완료</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_id">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>164</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ID</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_pw">
+    <property name="geometry">
+     <rect>
+      <x>157</x>
+      <y>217</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>비밀번호</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_check_pw">
+    <property name="geometry">
+     <rect>
+      <x>154</x>
+      <y>268</y>
+      <width>90</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>비밀번호 확인</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_nick">
+    <property name="geometry">
+     <rect>
+      <x>152</x>
+      <y>316</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>이름</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_phonenum">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>384</y>
+      <width>240</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="tabletTracking">
+     <bool>false</bool>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(255, 255, 255);
+border:1px solid rgb(0, 81, 255);
+border-radius:10px;
+</string>
+    </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhNone</set>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>핸드폰 번호</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_phonenum">
+    <property name="geometry">
+     <rect>
+      <x>152</x>
+      <y>370</y>
+      <width>80</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>핸드폰 번호</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>le_input_id</tabstop>
+  <tabstop>btn_check_id</tabstop>
+  <tabstop>le_input_pw</tabstop>
+  <tabstop>le_check_pw</tabstop>
+  <tabstop>le_input_name</tabstop>
+  <tabstop>le_phonenum</tabstop>
+  <tabstop>btn_finish</tabstop>
+  <tabstop>btn_cancle</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
