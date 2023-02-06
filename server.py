@@ -3,10 +3,6 @@ import pymysql
 import time
 import json
 
-host_str = '10.10.21.112'
-user_str = 'root3'
-password_str = '123456789'
-
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
 
@@ -121,11 +117,11 @@ class MultiChatServer:
                 print(e)
                 break
             else:
-                if self.signal[0] == "문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
+                if self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
-                elif self.signal[0] == "DB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
+                elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
                     self.teacher.request_db_name_list(socket)
-                elif self.signal[0] == "DB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
+                elif self.signal[0] == "TCDB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
                     self.teacher.request_db_description(socket)
 
     def send_all_client(self):
