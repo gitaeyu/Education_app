@@ -293,6 +293,32 @@
        </rect>
       </property>
      </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>470</y>
+        <width>81</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>정답</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="test_answer">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>470</y>
+        <width>481</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>정답을 입력해주세요</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_2"/>
    </widget>

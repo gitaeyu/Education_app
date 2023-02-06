@@ -80,8 +80,8 @@ from bs4 import BeautifulSoup
 key = "11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D"
 
 # 인증키 정보가 들어간 url 저장
-url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrSearch'
-params ={'serviceKey' : decoding, 'st' : '1', 'sw' : '', 'numOfRows' : '30', 'pageNo' : '1' }
+url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrSearch'
+params ={'serviceKey' : decoding, 'st' : '1', 'sw' : '', 'numOfRows' : '20', 'pageNo' : '1' }
 
 response = requests.get(url, params=params)
 
@@ -92,12 +92,12 @@ jsonString = json.dumps(dict, ensure_ascii=False)       # json.dumps를 이용�
 jsonObj = json.loads(jsonString)                        # 데이터 불러올 때(딕셔너리 형태로 받아옴)
 animalID = []
 for item in jsonObj['response']['body']['items']['item']:
-    animalID.append(item['anmlSpecsId'])
+    animalID.append(item['insctPilbkNo'])
 
 
 for x in animalID :
 
-    url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrInfo'
+    url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrInfo'
     params ={'serviceKey' : decoding , 'q1' : x }
 
 
@@ -106,16 +106,16 @@ for x in animalID :
     dict = xmltodict.parse(content)  # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
     jsonString = json.dumps(dict, ensure_ascii=False)  # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
     jsonObj = json.loads(jsonString)  # 데이터 불러올 때(딕셔너리 형태로 받아옴)
-    print(jsonObj['response']['body']['item']['eclgDpftrCont'])
-    print(jsonObj['response']['body']['item']['gnrlSpftrCont'])
+    print(jsonObj['response']['body']['item']['cont1'])
+    print(jsonObj['response']['body']['item']['cont7'])
     print(jsonObj['response']['body']['item']['imgUrl'])
-    print(jsonObj['response']['body']['item']['anmlGnrlNm'])
+    print(jsonObj['response']['body']['item']['insctOfnmKrlngNm'])
     con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                           db='education_app', charset='utf8')
     with con:
         with con.cursor() as cur:
-            sql = f"INSERT INTO 학습자료 values('포유류','{jsonObj['response']['body']['item']['anmlGnrlNm']}',\
-            '{jsonObj['response']['body']['item']['eclgDpftrCont']}','{jsonObj['response']['body']['item']['gnrlSpftrCont']}',\
+            sql = f"INSERT INTO 학습자료 values('곤충','{jsonObj['response']['body']['item']['insctOfnmKrlngNm']}',\
+            '{jsonObj['response']['body']['item']['cont1']}','{jsonObj['response']['body']['item']['cont7']}',\
             '{jsonObj['response']['body']['item']['imgUrl']}')"
             cur.execute(sql)
             con.commit()
