@@ -136,6 +136,21 @@
        </property>
       </item>
      </widget>
+     <widget class="QTreeWidget" name="treeWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>320</y>
+        <width>121</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -149,7 +164,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>4</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="page_3">
     <widget class="QLabel" name="lb_point">
@@ -260,6 +275,65 @@ color: rgb(255, 255, 255);
       <string>12312321321</string>
      </property>
     </widget>
+    <widget class="QListWidget" name="lw_learning_list">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>221</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lb_img">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>55</y>
+       <width>261</width>
+       <height>231</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>이미지</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="tb_learning_content">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>350</y>
+       <width>521</width>
+       <height>192</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_learning_finish">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>560</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>학습완료</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lb_learning_img_name">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>310</y>
+       <width>131</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>학습자료 이름</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="page_5">
     <widget class="QLabel" name="lb_question_name">
@@ -307,7 +381,7 @@ color: rgb(255, 255, 255);
     </widget>
    </widget>
   </widget>
-  <widget class="QLabel" name="lb_user_name_2">
+  <widget class="QLabel" name="lb_check_name">
    <property name="geometry">
     <rect>
      <x>620</x>
@@ -318,6 +392,32 @@ color: rgb(255, 255, 255);
    </property>
    <property name="text">
     <string>(아이디) 님 안녕하세요</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lb_date">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>20</y>
+     <width>60</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>date</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lb_time">
+   <property name="geometry">
+    <rect>
+     <x>267</x>
+     <y>20</y>
+     <width>50</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>time</string>
    </property>
   </widget>
  </widget>
