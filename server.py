@@ -38,9 +38,9 @@ class TeacherClass:
                               db='education_app', charset='utf8')
         with con:
             with con.cursor() as cur:
-                sql = f"INSERT INTO test (Test_contents,Test_img_URL,Test_correct_answer,Test_subject) values\
-                ('{self.parent.signal[1]}','{self.parent.signal[2]}',\
-                '{self.parent.signal[3]}','{self.parent.signal[4]}')"
+                sql = f"INSERT INTO test (Test_contents,Test_img_URL,Test_correct_answer,Test_subject,\
+                Test_contents_name) values ('{self.parent.signal[1]}','{self.parent.signal[2]}',\
+                '{self.parent.signal[3]}','{self.parent.signal[4]}','{self.parent.signal[5]}')"
                 cur.execute(sql)
                 con.commit()
 
@@ -117,7 +117,7 @@ class MultiChatServer:
                 print(e)
                 break
             else:
-                if self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
+                if self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류,항목이름]
                     self.teacher.testentry()
                 elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
                     self.teacher.request_db_name_list(socket)

@@ -116,9 +116,9 @@ class Main(QMainWindow, form_class):
             if value not in result:
                 result.append(value)
         # xml값 DataFrame으로 만들기
-        self.df = pd.DataFrame(result, columns=['anmlGnrlNm', 'anmlSpecsId'])
+        self.df = pd.DataFrame(result, columns=['a', 'b'])
         for i in range(len(self.df)):
-            self.test_item_list_widget.addItem(self.df.iloc[i]['anmlGnrlNm'])
+            self.test_item_list_widget.addItem(self.df.iloc[i]['a'])
 
     def search_test_items_insect(self):
         url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctPrtctList'  # 멸종위기 곤충 목록 조회
@@ -186,7 +186,7 @@ class Main(QMainWindow, form_class):
     def test_items_description_bird(self):
         self.textBrowser.clear()
         temp = self.test_item_list_widget.currentRow()
-        q1 = self.df.iloc[temp]['anmlSpecsId']
+        q1 = self.df.iloc[temp]['b']
 
         url = 'http://apis.data.go.kr/1400119/BirdService/birdIlstrInfo'  # 조류도감 상세정보 조회 API 사용
         params = {'serviceKey': decoding, 'q1': q1}
@@ -257,11 +257,12 @@ class Main(QMainWindow, form_class):
             self.item = '동물'
         test_contents = self.test_contents.text()  # 문제 내용
         test_correct_answer = self.test_answer.text()  # 문제 정답
+        test_contents_name = self.test_item_list_widget.currentItem().text()
         if test_contents == "문제 내용을 입력해주세요":
             return
         if test_correct_answer == "정답을 입력해주세요":
             return
-        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item]  # 문제내용, URL , 정답, 분류
+        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item,test_contents_name]  # 문제내용, URL , 정답, 분류, 항목이름
         message = json.dumps(information)  # 제이슨 변환
         self.clear_test_update()  # 문제 등록 UI 초기화 메서드 호출
         self.client_socket.send(message.encode())  # 서버에 정보 전달
