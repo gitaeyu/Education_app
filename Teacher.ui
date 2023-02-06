@@ -47,12 +47,12 @@
      </item>
      <item>
       <property name="text">
-       <string>동물</string>
+       <string>포유류</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>식물</string>
+       <string>조류</string>
       </property>
      </item>
     </item>
@@ -67,12 +67,12 @@
      </item>
      <item>
       <property name="text">
-       <string>동물</string>
+       <string>포유류</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>식물</string>
+       <string>조류</string>
       </property>
      </item>
     </item>
@@ -142,7 +142,7 @@
 이름 목록만 불러옴</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="Test_Update_entry_btn">
       <property name="geometry">
        <rect>
         <x>290</x>
@@ -218,7 +218,7 @@
        <string>Text브라우전데 바꿀거</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_2">
+     <widget class="QLineEdit" name="test_contents">
       <property name="geometry">
        <rect>
         <x>190</x>

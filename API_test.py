@@ -6,11 +6,13 @@ import bs4
 import json
 import requests
 import xmltodict
-
+import pymysql
+from xml.etree import ElementTree
+import lxml
 # a= input("검색어를 입력해주세요")
 # #인증키 입력
-# encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
-# decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
+encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
+decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
 # url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrSearch'
 # params ={'serviceKey' : decoding, 'st' : '1', 'sw' : a ,'numOfRows' : '10', 'pageNo' : '1' }
 #
@@ -25,11 +27,15 @@ import xmltodict
 #     print(item['anmlGnrlNm'], item['anmlSpecsId'])
 #
 # q1 = input("anmlSpecsId 를 입력해주세요")
-#
+
 # url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrInfo'
 # params ={'serviceKey' : decoding, 'q1' : q1 }
+
 #
-# response = requests.get(url, params=params)
+#
+#
+# url = 'http://down.edunet4u.net/KEDNCM/OPENAPI/WKSTCONT/nedu_wkst_cont_CLSS0000000362.xml'
+# response = requests.get(url)
 # print(response.content)
 # # xml 내용
 # content = response.text
@@ -37,8 +43,7 @@ import xmltodict
 # #bs4 사용하여 item 태그 분리
 #
 # xml_obj = bs4.BeautifulSoup(content,'lxml-xml')
-# rows = xml_obj.findAll('item')
-# print(rows)
+# rows = xml_obj.findAll('row_small_data')
 # # xml 안의 데이터 수집
 # row_list = [] # 행값
 # name_list = [] # 열이름값
@@ -50,7 +55,7 @@ import xmltodict
 #         if i ==0 :
 #             # 컬럼 이름 값 저장
 #             name_list.append(columns[j].name)
-#         if j == 6 or j ==15 or j ==16 or j ==17 : # 원하는 컬럼 데이터
+#         if j == 3 or j ==4 : # 원하는 컬럼 데이터
 #             # 컬럼의 각 데이터 값 저장
 #             value_list.append(columns[j].text)
 #         # 각 행의 value값 전체 저장
@@ -62,8 +67,8 @@ import xmltodict
 # pd.set_option('display.max_rows', None)
 # pd.set_option('display.max_columns', None)
 # #xml값 DataFrame으로 만들기
-# df = pd.DataFrame(row_list, columns=['anmlGnrlNm','eclgDpftrCont','gnrlSpftrCont','imgUrl'])
-# # print(df.head(10))
+# df = pd.DataFrame(row_list, columns=['tcp_atcl','url'])
+# print(df.head(10))
 # print(df.iloc[0]['eclgDpftrCont'])
 # print("나이스")
 # print(df.iloc[0]['gnrlSpftrCont'])
@@ -75,15 +80,42 @@ from bs4 import BeautifulSoup
 key = "11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D"
 
 # 인증키 정보가 들어간 url 저장
-url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrSearch'
-params ={'serviceKey' : key, 'st' : '1', 'sw' : '밤나방', 'numOfRows' : '10', 'pageNo' : '1' }
+url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrSearch'
+params ={'serviceKey' : decoding, 'st' : '1', 'sw' : '', 'numOfRows' : '30', 'pageNo' : '1' }
 
 response = requests.get(url, params=params)
-content = response.content                    # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
+
+content = response.content                     # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
 print(content)
 dict = xmltodict.parse(content)                         # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
 jsonString = json.dumps(dict, ensure_ascii=False)       # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
 jsonObj = json.loads(jsonString)                        # 데이터 불러올 때(딕셔너리 형태로 받아옴)
-
+animalID = []
 for item in jsonObj['response']['body']['items']['item']:
-    print(item['insctOfnmKrlngNm'], item['insctSmplNo'])
+    animalID.append(item['anmlSpecsId'])
+
+
+for x in animalID :
+
+    url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrInfo'
+    params ={'serviceKey' : decoding , 'q1' : x }
+
+
+    response = requests.get(url, params=params)
+    content = response.content  # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
+    dict = xmltodict.parse(content)  # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
+    jsonString = json.dumps(dict, ensure_ascii=False)  # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
+    jsonObj = json.loads(jsonString)  # 데이터 불러올 때(딕셔너리 형태로 받아옴)
+    print(jsonObj['response']['body']['item']['eclgDpftrCont'])
+    print(jsonObj['response']['body']['item']['gnrlSpftrCont'])
+    print(jsonObj['response']['body']['item']['imgUrl'])
+    print(jsonObj['response']['body']['item']['anmlGnrlNm'])
+    con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                          db='education_app', charset='utf8')
+    with con:
+        with con.cursor() as cur:
+            sql = f"INSERT INTO 학습자료 values('포유류','{jsonObj['response']['body']['item']['anmlGnrlNm']}',\
+            '{jsonObj['response']['body']['item']['eclgDpftrCont']}','{jsonObj['response']['body']['item']['gnrlSpftrCont']}',\
+            '{jsonObj['response']['body']['item']['imgUrl']}')"
+            cur.execute(sql)
+            con.commit()
