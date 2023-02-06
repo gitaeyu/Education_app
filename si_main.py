@@ -1,4 +1,3 @@
-import sys
 from socket import *
 from threading import *
 import time
@@ -55,7 +54,9 @@ class Login(QWidget, login_form_class):
     def move_main(self):
         id = self.le_show_ID.text()
         pw = self.le_input_PW.text()
-        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
                                charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
@@ -94,7 +95,9 @@ class Login(QWidget, login_form_class):
             self.le_input_id.clear()
             QMessageBox.information(self, "ID", "ID가 너무 짧습니다.\n3자 이상으로 입력해주세요")
         else:
-            conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+            # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+            #                        charset='utf8')
+            conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"select ID from memberinfo where ID='{id}'")
             a = cursor.fetchone()
@@ -107,8 +110,10 @@ class Login(QWidget, login_form_class):
             else:
                 QMessageBox.critical(self, "ID", "이미 사용중인 ID 입니다.")
     def check_sign_up(self):
-        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-                                    charset='utf8')
+        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         cursor = conn.cursor()
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
@@ -206,7 +211,6 @@ class Contents(QWidget, contents_form_class):
         requests_msg = json.dumps(temp)
         self.client_socket.sendall(requests_msg.encode())
 
-
     def learning(self, item, column):
         self.learning_name = item.text(column)
         self.lb_learning_name.setText(f"{self.learning_name} 학습자료")
@@ -300,6 +304,7 @@ class Contents(QWidget, contents_form_class):
         remote_ip = ip
         remote_port = port
         self.client_socket.connect((remote_ip, remote_port))
+        #소켓이 연결되면 로그인 정보를 서버에 전송한다.
         login_temp = ['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
         login_msg = json.dumps(login_temp)
         self.client_socket.sendall(login_msg.encode())
@@ -324,21 +329,24 @@ class Contents(QWidget, contents_form_class):
             else:
                 if self.signal[0] == "로그인":  #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
                     print('SC온라인교사리스트')
-                    self.online_teacher()
+                    self.online_user()
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
-    def online_teacher(self):
+    def online_user(self):
         self.lw_online_teacher.clear()
         online_student = self.signal[1]
         online_teacher = self.signal[2]
+        for i in online_student: # 테스트용
+            print(i[1])
+            self.lw_online_student.addItem(i[1])
+        self.lw_online_student.scrollToBottom()
         for i in online_teacher:
             print(i[1])
             self.lw_online_teacher.addItem(i[1])
         self.lw_online_teacher.scrollToBottom()
-        print('온라인교사 목록 업데이트')
+        print('온라인유저 목록 업데이트')
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     widget = QtWidgets.QStackedWidget()
     # 클래스의 객체 만들기

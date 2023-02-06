@@ -99,7 +99,7 @@ class MultiChatServer:
         self.send_message = ""  # 최종 수신 메시지
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
-    def new_login_user(self): #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
+    def new_login_user(self): #signal = ['로그인',ID, 이름, 학생/교사]
         temp= [self.signal[1],self.signal[2],self.signal[3]]
         self.idlist.append(temp)
         for i in self.idlist:
@@ -125,10 +125,12 @@ class MultiChatServer:
                     break
             except ConnectionAbortedError as e:
                 print(e)
+                print('??')
                 self.remove_socket(socket)
                 break
             except ConnectionResetError as e:
                 print(e)
+                print('!!')
                 break
             else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
                 if self.signal[0] =="로그인":  # signal = ["SC학생로그인", ID, 이름, 학생/교사]
@@ -152,6 +154,7 @@ class MultiChatServer:
             socket, (ip, port) = client
             try:
                 socket.sendall(self.send_message.encode())
+                print('메시지 전송')
             except Exception as e:  # 연결종료
                 print(e)
                 self.clients.remove(client)  # 소켓 제거
@@ -161,7 +164,7 @@ class MultiChatServer:
         """
         나갔을때 연결이 끊기기 전 self.clients에서
         client를 제거해주면서 소켓 정보와 id 정보를 없애준다.
-        또한 idlist가 갱신됬으므로 이 정보를 다시 클라이언트로 보내준다.
+        또한 idlist가 갱신됐으므로 이 정보를 다시 클라이언트로 보내준다.
         """
         i = 0
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
