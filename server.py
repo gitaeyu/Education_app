@@ -80,6 +80,7 @@ class TeacherClass:
                 print(sql)
                 cur.execute(sql)
                 info_list = cur.fetchall()
+                print(info_list)
                 information = ["DB설명반환"]
                 information.append(info_list[0][0])
                 information.append(info_list[0][1])
