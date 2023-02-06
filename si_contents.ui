@@ -77,7 +77,7 @@
       </property>
       <column>
        <property name="text">
-        <string>시발</string>
+        <string/>
        </property>
       </column>
       <item>
@@ -164,7 +164,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="page_3">
     <widget class="QLabel" name="lb_point">
@@ -266,7 +266,7 @@ color: rgb(255, 255, 255);
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>10</y>
        <width>201</width>
        <height>16</height>
       </rect>
@@ -369,14 +369,37 @@ color: rgb(255, 255, 255);
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>30</y>
+       <x>10</x>
+       <y>10</y>
        <width>121</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
       <string>상담 페이지</string>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="lw_online_teacher">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>40</y>
+       <width>131</width>
+       <height>192</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>64</x>
+       <y>240</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>온라인</string>
      </property>
     </widget>
    </widget>

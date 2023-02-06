@@ -1,5 +1,5 @@
 import sys
-
+from socket import *
 from threading import *
 import time
 import datetime
@@ -63,6 +63,7 @@ class Login(QWidget, login_form_class):
         if self.login_user == None:
             QMessageBox.information(self, "로그인", "잘못 입력했습니다.\n다시 입력해주세요.")
         else:
+
             content = Contents(self)
             content.show()
             self.close()
@@ -165,6 +166,10 @@ class Contents(QWidget, contents_form_class):
         self.btn_hide_menu.clicked.connect(self.hide_menu)
         self.tw_menu.itemClicked.connect(self.show_contents)
         self.lw_learning_list.itemClicked.connect(self.clicked_contents)
+        ip = '127.0.0.1'
+        port = 9048
+        self.initialize_socket(ip, port)
+        self.listen_thread()
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
         td_time.start()
     def show_menu(self):
@@ -183,6 +188,7 @@ class Contents(QWidget, contents_form_class):
         elif item_txt == "상담":
             print('상담하기')
             self.stw_contents.setCurrentIndex(4)
+            self.consulting_request()
         else:
             a = item.parent()
             if a:
@@ -195,6 +201,10 @@ class Contents(QWidget, contents_form_class):
                     print('문제풀이')
                     self.stw_contents.setCurrentIndex(2)
                     self.problem_solving(item,column)
+    def consulting_request(self):
+        temp = ['SC온라인교사목록',self.login_user[3]]
+        requests_msg = json.dumps(temp)
+        self.client_socket.sendall(requests_msg.encode())
 
 
     def learning(self, item, column):
@@ -282,11 +292,53 @@ class Contents(QWidget, contents_form_class):
             time_str = now.strftime('%H:%M:%S')
             self.lb_date.setText(date_str)
             self.lb_time.setText(time_str)
-
-
-
+    def initialize_socket(self, ip, port):
+        """
+        클라이언트 소켓을 열고 서버 소켓과 연결해준다.
+        """
+        self.client_socket = socket(AF_INET, SOCK_STREAM)
+        remote_ip = ip
+        remote_port = port
+        self.client_socket.connect((remote_ip, remote_port))
+        login_temp = ['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
+        login_msg = json.dumps(login_temp)
+        self.client_socket.sendall(login_msg.encode())
+    def listen_thread(self):
+        """
+        서버에서의 신호를 수신받는 스레드 시작
+        """
+        t = Thread(target=self.receive_message, args=(self.client_socket,), daemon=True)
+        t.start()
+    def receive_message(self, socket):
+        """
+        서버에서 전달하는 메시지를 수신하는 스레드
+        """
+        while True:
+            try:
+                incoming_message = socket.recv(8192)
+                self.signal = json.loads(incoming_message.decode())
+                print(self.signal)
+            except Exception as er:
+                print(er)
+                break
+            else:
+                if self.signal[0] == "로그인":  #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
+                    print('SC온라인교사리스트')
+                    self.online_teacher()
+                elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
+                    print("DB설명반환 메세지 받음")
+    def online_teacher(self):
+        self.lw_online_teacher.clear()
+        online_student = self.signal[1]
+        online_teacher = self.signal[2]
+        for i in online_teacher:
+            print(i[1])
+            self.lw_online_teacher.addItem(i[1])
+        self.lw_online_teacher.scrollToBottom()
+        print('온라인교사 목록 업데이트')
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     widget = QtWidgets.QStackedWidget()
     # 클래스의 객체 만들기

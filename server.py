@@ -3,9 +3,6 @@ import pymysql
 import time
 import json
 
-host_str = '10.10.21.112'
-user_str = 'root3'
-password_str = '123456789'
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -19,6 +16,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         Multi_server.receive_messages(self.request)
 
 
+
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
@@ -28,9 +26,8 @@ class StudentClass:
         super().__init__()
         self.parent = parent
 
-    def test(self):
-        print('test')
-
+    def requests_online_teacher_list(self):
+        self.parent.idlist
 
 class TeacherClass:
     def __init__(self, parent):
@@ -96,11 +93,24 @@ class MultiChatServer:
     def __init__(self):
         self.idlist = []
         self.clients = []
+        self.student_list=[]
+        self.teacher_list = []
         self.signal = ''
-        self.final_received_message = ""  # 최종 수신 메시지
+        self.send_message = ""  # 최종 수신 메시지
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
-
+    def new_login_user(self): #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
+        temp= [self.signal[1],self.signal[2],self.signal[3]]
+        self.idlist.append(temp)
+        for i in self.idlist:
+            print(i)
+            if i[2] =='학생':
+                self.student_list.append(i)
+            else:
+                self.teacher_list.append(i)
+        temp_msg = ['로그인', self.student_list, self.teacher_list]
+        self.send_message = json.dumps(temp_msg)
+        self.send_all_client()
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
         """
@@ -120,13 +130,18 @@ class MultiChatServer:
             except ConnectionResetError as e:
                 print(e)
                 break
-            else:
-                if self.signal[0] == "문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
+            else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
+                if self.signal[0] =="로그인":  # signal = ["SC학생로그인", ID, 이름, 학생/교사]
+                    self.new_login_user()
+                elif self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
-                elif self.signal[0] == "DB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
+                elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
                     self.teacher.request_db_name_list(socket)
-                elif self.signal[0] == "DB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
+                elif self.signal[0] == "TCDB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
                     self.teacher.request_db_description(socket)
+                elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
+                    self.student.requests_online_teacher_list(socket)
+
 
     def send_all_client(self):
         """
@@ -136,7 +151,7 @@ class MultiChatServer:
             print(client, "고객")
             socket, (ip, port) = client
             try:
-                socket.sendall(self.final_received_message.encode())
+                socket.sendall(self.send_message.encode())
             except Exception as e:  # 연결종료
                 print(e)
                 self.clients.remove(client)  # 소켓 제거
@@ -159,7 +174,7 @@ class MultiChatServer:
                 print(f"IP:{ip},Port:{port} 연결이 종료 되었습니다.")
                 tempdata = json.dumps(self.idlist)
                 senddata = tempdata + "985674"
-                self.final_received_message = senddata
+                self.send_message = senddata
                 self.send_all_client()
                 break
             i += 1
