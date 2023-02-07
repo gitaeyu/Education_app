@@ -358,6 +358,10 @@ class Main(QMainWindow, form_class):
         elif self.item == "상담":
             print('상담하기')
             self.stackedWidget.setCurrentIndex(4)
+        elif self.item == "점수/통계확인(학생별)":
+            self.stackedWidget.setCurrentIndex(1)
+        elif self.item == "통계확인(문제별)":
+            self.stackedWidget.setCurrentIndex(2)
         else:
             a = item.parent()
             if a:
@@ -366,9 +370,6 @@ class Main(QMainWindow, form_class):
                     print('학습')
                     self.stackedWidget.setCurrentIndex(0)
                     self.clear_test_update()
-                elif menu == "점수/통계확인(학생별)":
-                    self.stackedWidget.setCurrentIndex(1)
-                    print('문제풀이')
         print(self.item)
     def entry_test(self):
         if self.item == '':
