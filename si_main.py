@@ -49,11 +49,25 @@ class Contents(QWidget, contents_form_class):
         self.btn_join2.clicked.connect(self.move_join)
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
+        # Q&A 테이블 위젯
+        self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
         # ----------------------------------------------------------
         # 메시지 박스
         self.message_signal = MessageSignal()
         self.message_signal.show_message.connect(self.show_message_slot)
+        # 로그아웃 확인값
         self.logout_bool = False
+    def show_qna(self):
+        select_question = self.tw_qna_list.selectedItems()
+        question_num = select_question[0].text()
+        question_user_name = select_question[1].text()
+        self.tb_qna.clear()
+        for i in self.qna_list:
+            if question_num == str(i[0]) and question_user_name == self.login_user[3]:
+                self.tb_qna.append(f"문의번호: {i[0]}\n제목: {i[3]}\t작성자: {i[1]}\n내용: {i[4]}\n")
+                if i[5]!= None:
+                    self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[5]}")
+                break
     def show_message_slot(self, message):
         if message == "입력하신 정보가 맞지 않습니다.":
             self.le_input_ID.clear()
@@ -111,7 +125,9 @@ class Contents(QWidget, contents_form_class):
         else:
             # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
             #                        charset='utf8')
-            conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+            conn = pymysql.connect(host='192.168.219.109', port=3306, user='root', password='00000000',
+                                  db='education_app',
+                                  charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"select ID from memberinfo where ID='{id}'")
             a = cursor.fetchone()
@@ -126,8 +142,8 @@ class Contents(QWidget, contents_form_class):
     def check_sign_up(self):
         # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
         #                        charset='utf8')
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
+        conn = pymysql.connect(host='192.168.219.109', port=3306, user='root', password='00000000', db='education_app',
+                              charset='utf8')
         cursor = conn.cursor()
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
@@ -313,11 +329,11 @@ class Contents(QWidget, contents_form_class):
         print('온라인유저 목록 업데이트')
     def QNA_list_update(self):
         print('메서드 진입')
-        qna_list = self.parent.signal[1::]
-        self.tw_qna_list.setRowCount(len(qna_list))
-        for i in range(len(qna_list)):
-            for j in range(len(qna_list[i])-1):
-                self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(qna_list[i][j])))
+        self.qna_list = self.parent.signal[1::]
+        self.tw_qna_list.setRowCount(len(self.qna_list))
+        for i in range(len(self.qna_list)):
+            for j in range(len(self.qna_list[i])-1):
+                self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
 
 class Student:
     def __init__(self):

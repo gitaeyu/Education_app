@@ -27,8 +27,10 @@ class StudentClass:
     #     self.parent.idlist
     def request_DB_QNA(self,socket):
         print('DB_QNA 메서드진입')
-        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+        #                       db='education_app', charset='utf8')
+        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
@@ -46,8 +48,10 @@ class TeacherClass:
         self.parent = parent
 
     def testentry(self):
-        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+        #                       db='education_app', charset='utf8')
+        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"INSERT INTO test (Test_contents,Test_img_URL,Test_correct_answer,Test_subject) values\
@@ -59,8 +63,10 @@ class TeacherClass:
     def request_db_name_list(self,socket):
         # signal = ["DB검색요청", 종류, 검색어]
         print(self.parent.signal)
-        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+        #                       db='education_app', charset='utf8')
+        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT 이름 from 학습자료 where 분류 = '{self.parent.signal[1]}' \
@@ -79,8 +85,10 @@ class TeacherClass:
     def request_db_description(self,socket):
         # signal = ["DB설명요청", 종류, 검색어]
         print(self.parent.signal)
-        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+        #                       db='education_app', charset='utf8')
+        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT 생태특징,일반특징,이미지 from 학습자료 where 분류 = '{self.parent.signal[1]}' \
@@ -111,6 +119,38 @@ class MultiChatServer:
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
 
+    def login_id_duplicate_check(self, socket):
+        id = self.signal[1]
+        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"select ID from memberinfo where ID='{id}'")
+        a = cursor.fetchone()
+        conn.close()
+        if a == None:
+            information = ["중복 없음"]
+            message = json.dumps(information)
+            socket.send(message.encode())
+        else:
+            information = ["ID 중복"]
+            message = json.dumps(information)
+            socket.send(message.encode())
+
+    def sign_up(self, socket):
+        # signal = ["회원가입", id,pw,name,'선생']
+        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"insert into memberinfo (ID,Password,User_Name,Division) \
+                        values('{self.signal[1]}','{self.signal[2]}','{self.signal[3]}','{self.signal[4]}')")
+        conn.commit()
+        conn.close()
+        # 희희
+        information = ["가입 완료"]
+        message = json.dumps(information)
+        socket.send(message.encode())
     def user_logout(self): # signal = ["로그아웃", ID, 이름, 학생/교사]
         logout_user = self.signal[1::]
         if logout_user[-1] == '학생':
@@ -156,10 +196,10 @@ class MultiChatServer:
     def login_check(self):# signal = ["로그인", ID, pw]
         id = self.signal[1]
         pw = self.signal[2]
-        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
-        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
+        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
         #                        charset='utf8')
+        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
         self.login_user = cursor.fetchone()
@@ -207,6 +247,10 @@ class MultiChatServer:
                     self.teacher.request_db_description(socket)
                 elif self.signal[0] == "SCDB요청 Q&A":
                     self.student.request_DB_QNA(socket)
+                elif self.signal[0] == "ID중복확인":  # signal = ["ID중복확인", ID]
+                    self.login_id_duplicate_check(socket)
+                elif self.signal[0] == "회원가입":  # signal = ["회원가입", id,pw,chk_pw,name]
+                    self.sign_up(socket)
 
                 #QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
                 # elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]

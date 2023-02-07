@@ -1001,7 +1001,7 @@ color: rgb(255, 255, 255);
         </property>
        </column>
       </widget>
-      <widget class="QTextBrowser" name="textBrowser">
+      <widget class="QTextBrowser" name="tb_qna">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1206,7 +1206,7 @@ color: rgb(255, 255, 255);
         </property>
         <column>
          <property name="text">
-          <string>  </string>
+          <string/>
          </property>
         </column>
         <item>
