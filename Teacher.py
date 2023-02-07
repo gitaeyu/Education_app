@@ -10,12 +10,13 @@ import requests
 import xmltodict
 import pandas as pd
 import bs4
-
+from PyQt5.QtCore import QObject, pyqtSignal
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
 decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
 form_class = uic.loadUiType('./Teacher.ui')[0]
 
-
+class MessageSignal(QObject):
+    show_message = pyqtSignal(str)
 
 class Main(QMainWindow, form_class):
     Client_socket = None
@@ -25,12 +26,112 @@ class Main(QMainWindow, form_class):
         self.setupUi(self)
         self.initialize_socket(ip, port)
         self.listen_thread()
+        self.login_stack.setCurrentIndex(0)
+        self.mainstack.setCurrentIndex(0)
         self.test_update_search.clicked.connect(self.search_test_items)
         self.test_item_list_widget.itemClicked.connect(self.test_items_description)
         self.Test_Update_entry_btn.clicked.connect(self.entry_test)
         self.treeWidget.itemClicked.connect(self.on_item_clicked)
         self.item = ''
         self.test_update_search_LE.setText('')
+        # ----------------------------------------------------------
+        # 페이지 이동
+        self.btn_next.clicked.connect(self.login_move_next)
+        self.btn_prev.clicked.connect(self.login_move_prev)
+        # ----------------------------------------------------------
+        # ID 입력
+        self.le_input_ID.returnPressed.connect(self.login_move_next)
+        # ----------------------------------------------------------
+        # 로그인 체크
+        self.le_input_PW.returnPressed.connect(self.login_check)
+        self.btn_move_main.clicked.connect(self.login_check)
+        self.message_signal = MessageSignal()
+        self.message_signal.show_message.connect(self.show_message_slot)
+        # 회원가입
+        self.btn_check_id.clicked.connect(self.check_id)
+        self.le_input_id.returnPressed.connect(self.check_id)
+        self.le_input_id.textChanged.connect(self.change_id)
+        self.btn_join_finish.clicked.connect(self.check_sign_up)
+        self.btn_cancle.clicked.connect(self.move_login)
+        self.btn_join.clicked.connect(self.move_join)
+        self.btn_join2.clicked.connect(self.move_join)
+
+
+    def move_join(self):
+        self.login_stack.setCurrentIndex(2)
+
+
+    def move_login(self):
+        self.le_input_id.clear()
+        self.le_input_pw.clear()
+        self.le_check_pw.clear()
+        self.le_input_name.clear()
+        self.le_phonenum.clear()
+        self.login_stack.setCurrentIndex(0)
+
+    #회원가입
+    def change_id(self):
+        self.use_id = False
+        self.btn_check_id.setEnabled(True)
+
+    def check_id(self):
+        id = self.le_input_id.text()
+        self.serviceable = False
+        self.use_id = False
+        if len(id) < 3:
+            self.le_input_id.clear()
+            QMessageBox.information(self, "ID", "ID가 너무 짧습니다.\n3자 이상으로 입력해주세요")
+        else:
+            # DB 요청
+            information = ["ID중복확인",id]
+            message = json.dumps(information)
+            self.client_socket.send(message.encode())
+    def check_sign_up(self):
+        id = self.le_input_id.text()
+        pw = self.le_input_pw.text()
+        chk_pw = self.le_check_pw.text()
+        name = self.le_input_name.text()
+        phonenum = self.le_phonenum.text()
+        self.join=[id, pw, chk_pw, name, phonenum]
+        what_NULL=['ID','PW','이름','휴대폰번호']
+        print(self.join)
+        for line_edit in self.join:
+            if line_edit =="":
+                NULL_index = self.join.index(line_edit)
+                QMessageBox.information(self, "NULL", f"{what_NULL[NULL_index]}를 입력해주세요.")
+                return
+        if self.use_id:
+            if self.join[1] == self.join[2]:
+                information = ["회원가입", id,pw,name,'선생']
+                message = json.dumps(information)
+                self.client_socket.send(message.encode())
+        else: QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
+
+    def sign_up_clear(self):
+        self.le_input_id.clear()
+        self.le_input_pw.clear()
+        self.le_check_pw.clear()
+        self.le_input_name.clear()
+        self.le_phonenum.clear()
+    def login_check(self):
+        # signal = ["로그인", ID, PW]
+        ID = self.le_show_ID.text()
+        password = self.le_input_PW.text()
+        information = ["로그인",ID,password,'선생']
+        message = json.dumps(information)
+        self.client_socket.send(message.encode())
+    def login_move_next(self):
+        input_id = self.le_input_ID.text()
+        self.le_show_ID.setText(input_id)
+        if input_id=="":
+            QMessageBox.warning(self, 'ID 입력 오류', 'ID를 입력해주세요.')
+        else:
+            self.login_stack.setCurrentIndex(1)
+
+    def login_move_prev(self):
+        self.login_stack.setCurrentIndex(0)
+        self.le_input_ID.clear()
+        self.le_input_PW.clear()
 
     def search_test_items(self):
         self.test_item_list_widget.clear()
@@ -253,10 +354,14 @@ class Main(QMainWindow, form_class):
 
         if self.item == "Q&A":
             print('Q&A')
-            self.stw_contents.setCurrentIndex(3)
+            self.stackedWidget.setCurrentIndex(3)
         elif self.item == "상담":
             print('상담하기')
-            self.stw_contents.setCurrentIndex(4)
+            self.stackedWidget.setCurrentIndex(4)
+        elif self.item == "점수/통계확인(학생별)":
+            self.stackedWidget.setCurrentIndex(1)
+        elif self.item == "통계확인(문제별)":
+            self.stackedWidget.setCurrentIndex(2)
         else:
             a = item.parent()
             if a:
@@ -265,33 +370,27 @@ class Main(QMainWindow, form_class):
                     print('학습')
                     self.stackedWidget.setCurrentIndex(0)
                     self.clear_test_update()
-                elif menu == "점수/통계확인(학생별)":
-                    self.stw_contents.setCurrentIndex(1)
-                    print('문제풀이')
         print(self.item)
     def entry_test(self):
-        if self.item == '' :
-            self.item = '동물'
-        test_contents = self.test_contents.text()
-        test_correct_answer = self.test_answer.text()
-        if test_contents == "문제 내용을 입력해주세요" :
+        if self.item == '':
+            self.item = '포유류'
+        test_contents = self.test_contents.text()  # 문제 내용
+        test_correct_answer = self.test_answer.text()  # 문제 정답
+        test_contents_name = self.test_item_list_widget.currentItem().text()
+        if test_contents == "문제 내용을 입력해주세요":
             return
-        information = ["문제등록", test_contents,self.img_URL,test_correct_answer,self.item]
-        print(information)
-        message = json.dumps(information)
-        self.clear_test_update()
-        self.client_socket.send(message.encode())
+        if test_correct_answer == "정답을 입력해주세요":
+            return
+        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item,test_contents_name]  # 문제내용, URL , 정답, 분류, 항목이름
+        message = json.dumps(information)  # 제이슨 변환
+        self.clear_test_update()  # 문제 등록 UI 초기화 메서드 호출
+        self.client_socket.send(message.encode())  # 서버에 정보 전달
 
     def clear_test_update(self):
         self.test_update_search_LE.clear()
         self.test_item_list_widget.clear()
         self.textBrowser.clear()
         self.test_contents.setText("문제 내용을 입력해주세요")
-
-
-
-
-
 
 
     def initialize_socket(self, ip, port):
@@ -326,6 +425,7 @@ class Main(QMainWindow, form_class):
         """
         서버에서 전달하는 메시지를 수신하는 스레드
         """
+
         while True:
             try:
                 incoming_message = socket.recv(8192)
@@ -341,6 +441,36 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
                     self.update_description_db()
+                elif self.signal[0] == "로그인 완료" : # signal = ['로그인 완료', 3, 'lsb', '1234', '이상복', 0, '0', '선생']
+                    if self.signal[7] == '선생' :
+                        self.move_main()
+                    else :
+                        self.message_signal.show_message.emit("학생은 로그인할 수 없습니다")
+                elif self.signal[0] == "로그인 실패" :
+                    self.message_signal.show_message.emit("잘못 입력했습니다.\n다시 입력해주세요.")
+                elif self.signal[0] == "로그인" :
+                    # 학색 혹은 선생 목록 띄우기
+                    pass
+                elif self.signal[0] == "중복 없음" :
+                    self.message_signal.show_message.emit("사용가능한 ID 입니다.")
+                    self.use_id = True
+                    self.btn_check_id.setEnabled(False)
+                elif self.signal[0] == "ID 중복" :
+                    self.message_signal.show_message.emit("이미 사용중인 ID 입니다.")
+                elif self.signal[0] == "가입 완료" :
+                    self.message_signal.show_message.emit("회원가입이 완료되었습니다")
+                    self.login_stack.setCurrentIndex(0)
+                    self.sign_up_clear()
+
+
+    def show_message_slot(self, message):
+        QMessageBox.information(self, "정보", message)
+    def move_main(self):
+        # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
+        self.mainstack.setCurrentIndex(1)
+        self.user_name_label.setText(f"{self.signal[4]}님 안녕하세요")
+
+
     def update_description_db(self):
         self.signal.pop(0)
         self.img_URL = self.signal[2]
