@@ -51,7 +51,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_31">
        <widget class="QLineEdit" name="le_input_ID">
@@ -699,7 +699,7 @@ border-radius:10px;
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="page_26">
       <widget class="QLabel" name="lb_point_">
@@ -899,6 +899,118 @@ color: rgb(255, 255, 255);
         <string>Q&amp;A 페이지</string>
        </property>
       </widget>
+      <widget class="QTextEdit" name="te_question">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>510</y>
+         <width>521</width>
+         <height>131</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>내용을 입력해주세요.</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_question_finish">
+       <property name="geometry">
+        <rect>
+         <x>390</x>
+         <y>649</y>
+         <width>141</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>작성완료</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="le_question_title">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>470</y>
+         <width>521</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>제목을 입력해주세요.</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>450</y>
+         <width>56</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>문의 하기</string>
+       </property>
+      </widget>
+      <widget class="QTableWidget" name="tw_qna_list">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>40</y>
+         <width>521</width>
+         <height>192</height>
+        </rect>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>문의번호</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>작성자</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>날짜</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>제목</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>내용</string>
+        </property>
+       </column>
+      </widget>
+      <widget class="QTextBrowser" name="tb_qna">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>270</y>
+         <width>521</width>
+         <height>151</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
      <widget class="QWidget" name="page_30">
       <widget class="QLabel" name="label_27">
@@ -917,24 +1029,63 @@ color: rgb(255, 255, 255);
       <widget class="QListWidget" name="lw_online_teacher_">
        <property name="geometry">
         <rect>
-         <x>20</x>
+         <x>9</x>
          <y>40</y>
          <width>151</width>
-         <height>231</height>
+         <height>571</height>
         </rect>
        </property>
       </widget>
       <widget class="QLabel" name="label_28">
        <property name="geometry">
         <rect>
-         <x>80</x>
-         <y>280</y>
-         <width>41</width>
+         <x>60</x>
+         <y>619</y>
+         <width>81</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>온라인</string>
+        <string>온라인 교사</string>
+       </property>
+      </widget>
+      <widget class="QListWidget" name="lw_chat">
+       <property name="geometry">
+        <rect>
+         <x>179</x>
+         <y>40</y>
+         <width>361</width>
+         <height>531</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="le_message">
+       <property name="geometry">
+        <rect>
+         <x>179</x>
+         <y>580</y>
+         <width>280</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>메시지를 입력해주세요.</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_send_message">
+       <property name="geometry">
+        <rect>
+         <x>469</x>
+         <y>580</y>
+         <width>75</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>전송</string>
        </property>
       </widget>
      </widget>
@@ -1055,7 +1206,7 @@ color: rgb(255, 255, 255);
         </property>
         <column>
          <property name="text">
-          <string>  </string>
+          <string/>
          </property>
         </column>
         <item>

@@ -56,7 +56,19 @@ class Main(QMainWindow, form_class):
         self.btn_cancle.clicked.connect(self.move_login)
         self.btn_join.clicked.connect(self.move_join)
         self.btn_join2.clicked.connect(self.move_join)
-
+        # QNA
+        self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
+        self.QnA_register_btn.clicked.connect(self.answer_register)
+    def answer_register(self):
+        select_question = self.tw_qna_list.selectedItems()
+        print(select_question)
+        question_num = select_question[0].text()
+        answer = self.QnA_linedit.text()
+        answer_user_name = self.login_user[3]
+        information = ["TC답변등록", question_num,answer,answer_user_name]
+        message = json.dumps(information)
+        self.client_socket.send(message.encode())
+        self.QnA_linedit.clear()
 
     def move_join(self):
         self.login_stack.setCurrentIndex(2)
@@ -355,6 +367,7 @@ class Main(QMainWindow, form_class):
 
         if self.item == "Q&A":
             print('Q&A')
+            self.DB_request_QNA()
             self.stackedWidget.setCurrentIndex(3)
         elif self.item == "상담":
             print('상담하기')
@@ -432,7 +445,8 @@ class Main(QMainWindow, form_class):
                 incoming_message = socket.recv(8192)
                 self.signal = json.loads(incoming_message.decode())
                 print(self.signal)
-            except:
+            except Exception as e:
+                print(e)
                 print("오류남")
                 break
             else:
@@ -465,15 +479,43 @@ class Main(QMainWindow, form_class):
                     self.message_signal.show_message.emit("회원가입이 완료되었습니다")
                     self.login_stack.setCurrentIndex(0)
                     self.sign_up_clear()
-
+                elif self.signal[0] == 'SC Q&A DB반환':
+                    self.QNA_list_update()
+                    print("QNA DB 반환")
+    def show_qna(self):
+        select_question = self.tw_qna_list.selectedItems()
+        print(select_question)
+        question_num = select_question[0].text()
+        question_user_name = select_question[1].text()
+        self.tb_qna.clear()
+        for i in self.qna_list:
+            if question_num == str(i[0]):
+                self.tb_qna.append(f"문의번호: {i[0]}\n제목: {i[3]}\t작성자: {i[1]}\n내용: {i[4]}\n")
+                if i[5]!= None:
+                    self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[5]}")
+                break
+    def QNA_list_update(self):
+        print('메서드 진입')
+        self.qna_list = self.signal[1:]
+        self.tw_qna_list.setRowCount(len(self.qna_list))
+        for i in range(len(self.qna_list)):
+            for j in range(len(self.qna_list[i])-1):
+                self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
+    def DB_request_QNA(self):
+        # self.login_user = [1, 'ksi', '1234', '김성일', 0, '4', '학생']
+        QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]
+        QNA_msg = json.dumps(QNA_temp)
+        self.client_socket.sendall(QNA_msg.encode())
+        print(QNA_temp,'보냄')
 
     def show_message_slot(self, message):
         QMessageBox.information(self, "정보", message)
     def move_main(self):
         # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
+        self.login_user = self.signal[1:]
+        # print(self.login_user)
         self.mainstack.setCurrentIndex(1)
         self.user_name_label.setText(f"{self.signal[4]}님 안녕하세요")
-
 
     def update_description_db(self):
         self.signal.pop(0)

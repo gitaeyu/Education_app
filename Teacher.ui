@@ -962,7 +962,7 @@ border-radius:10px;
          <string>Q&amp;A</string>
         </property>
        </widget>
-       <widget class="QTextBrowser" name="QnABrowser">
+       <widget class="QTextBrowser" name="tb_qna">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -995,7 +995,7 @@ border-radius:10px;
          </rect>
         </property>
        </widget>
-       <widget class="QTableWidget" name="tableWidget">
+       <widget class="QTableWidget" name="tw_qna_list">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -1003,6 +1003,9 @@ border-radius:10px;
           <width>871</width>
           <height>192</height>
          </rect>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
         </property>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
@@ -1019,12 +1022,12 @@ border-radius:10px;
         </column>
         <column>
          <property name="text">
-          <string>제목</string>
+          <string>날짜</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>날짜</string>
+          <string>제목</string>
          </property>
         </column>
        </widget>

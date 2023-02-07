@@ -29,9 +29,12 @@ class StudentClass:
         print('DB_QNA 메서드진입')
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
+        if self.parent.signal[3] == '학생':
+            sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
+        else :
+            sql = f"SELECT * FROM `q&a` "
         with con:
             with con.cursor() as cur:
-                sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
                 cur.execute(sql)
                 db_temp = cur.fetchall()
                 temp=['SC Q&A DB반환']
@@ -44,6 +47,19 @@ class TeacherClass:
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
+
+    def entry_answer(self):
+        print("답변등록")
+        # self.parent.signal = ["답변등록" ,문제번호 ,답변,답변자]
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"update `q&a` set Answer = '{self.parent.signal[2]}', Answer_user = '{self.parent.signal[3]}'\
+                        where Num = {int(self.parent.signal[1])} "
+                cur.execute(sql)
+                con.commit()
+        print("답변등록 완료")
 
     def testentry(self):
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
@@ -207,6 +223,7 @@ class MultiChatServer:
             try:
                 incoming_message = socket.recv(8192)
                 self.signal = json.loads(incoming_message.decode())
+                print(self.signal)
                 if not incoming_message:  # 연결이 종료됨
                     break
             except ConnectionAbortedError as e:
@@ -230,6 +247,8 @@ class MultiChatServer:
                     self.teacher.request_db_name_list(socket)
                 elif self.signal[0] == "TCDB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
                     self.teacher.request_db_description(socket)
+                elif self.signal[0] == "SCDB요청 Q&A":
+                    self.student.request_DB_QNA(socket)
                 elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
                     self.student.requests_online_teacher_list(socket)
                 elif self.signal[0] == "로그아웃":  # signal = ["로그아웃", ID, 이름, 학생/교사]
@@ -238,7 +257,8 @@ class MultiChatServer:
                     self.remove_socket(socket)
                 elif self.signal[0] == "실시간 상담" :  # signal = ["실시간상담]
                     pass
-                # elif self.signal[0] ==
+                elif self.signal[0] == "TC답변등록" : # signal = ["TC답변등록 ,문제번호 ,답변,답변자]
+                    self.teacher.entry_answer()
 
 
     # self.clients에 더 이상 ip와 port 저장하지않아서 ip,port 빼버림 (02.07 10:40)
