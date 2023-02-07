@@ -48,11 +48,11 @@
          <x>20</x>
          <y>20</y>
          <width>521</width>
-         <height>491</height>
+         <height>601</height>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="page_5">
         <widget class="QLineEdit" name="le_input_ID">
@@ -700,7 +700,7 @@ border-radius:10px;
        </rect>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_3">
        <widget class="QLineEdit" name="test_update_search_LE">
@@ -918,7 +918,135 @@ border-radius:10px;
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="page_4"/>
+      <widget class="QWidget" name="page_4">
+       <widget class="QLabel" name="label_18">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>131</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>점수/통계확인 (학생별)</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_8">
+       <widget class="QLabel" name="label_19">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>121</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>문제별 통계 확인 ??</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_9">
+       <widget class="QLabel" name="label_17">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>181</width>
+          <height>111</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Q&amp;A</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_10">
+       <widget class="QLabel" name="label_14">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>0</y>
+          <width>121</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>실시간 상담</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_15">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>20</y>
+          <width>601</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>상담 내역은 이 페이지를 벗어나면 사라집니다.</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="client_list_widget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>211</width>
+          <height>591</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_16">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>70</y>
+          <width>121</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>학생 목록</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="Consult_chat_lw">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>110</y>
+          <width>611</width>
+          <height>501</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="consult_chat_le">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>630</y>
+          <width>461</width>
+          <height>61</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="consult_chat_send">
+        <property name="geometry">
+         <rect>
+          <x>710</x>
+          <y>630</y>
+          <width>141</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>전송</string>
+        </property>
+       </widget>
+      </widget>
      </widget>
      <widget class="QTreeWidget" name="treeWidget">
       <property name="geometry">
@@ -966,21 +1094,6 @@ border-radius:10px;
        <property name="text">
         <string>점수/통계확인(학생별)</string>
        </property>
-       <item>
-        <property name="text">
-         <string>곤충</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>포유류</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>조류</string>
-        </property>
-       </item>
       </item>
       <item>
        <property name="text">
