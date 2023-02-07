@@ -25,7 +25,21 @@ class StudentClass:
 
     # def requests_online_teacher_list(self):
     #     self.parent.idlist
-
+    def request_DB_QNA(self,socket):
+        print('DB_QNA 메서드진입')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
+                cur.execute(sql)
+                db_temp = cur.fetchall()
+                temp=['SC Q&A DB반환']
+                for i in db_temp:
+                    temp.append(i)
+                request_db_msg = json.dumps(temp)
+                socket.sendall(request_db_msg.encode())
+                print('Q&A DB 전송완료')
 class TeacherClass:
     def __init__(self, parent):
         super().__init__()
@@ -97,6 +111,16 @@ class MultiChatServer:
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
 
+    def user_logout(self): # signal = ["로그아웃", ID, 이름, 학생/교사]
+        logout_user = self.signal[1::]
+        if logout_user[-1] == '학생':
+            self.student_list.remove(logout_user)
+        else:
+            self.teacher_list.remove(logout_user)
+        self.idlist.remove(logout_user)
+        temp_msg = ['로그아웃', self.student_list, self.teacher_list]
+        self.send_message = json.dumps(temp_msg)
+        self.send_all_client()
     def new_login_user(self, socket):  # signal = ['로그인',ID, pw, 학생/교사]
         result = self.login_check()
         if result == "성공":
@@ -106,6 +130,8 @@ class MultiChatServer:
             temp = [self.login_user[1],self.login_user[3],self.login_user[-1]]
             print(temp)
             self.idlist.append(temp)
+            self.student_list=[]
+            self.teacher_list=[]
             for i in self.idlist:
                 print(i)
                 if i[2] == '학생':
@@ -113,12 +139,13 @@ class MultiChatServer:
                 else:
                     self.teacher_list.append(i)
             temp_msg = ['로그인', self.student_list, self.teacher_list]
+            print(temp_msg)
             self.send_message = json.dumps(temp_msg)
             self.send_all_client()
-            login_info = ['로그인 완료']  # 1, 'ksi', '1234', '김성일', 0, '4', '학생'
+            time.sleep(0.2)
+            login_info = ['로그인 완료'] # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
             for x in self.login_user:
                 login_info.append(x)
-            # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
             message = json.dumps(login_info)
             socket.send(message.encode())
         elif result == "실패":
@@ -152,8 +179,8 @@ class MultiChatServer:
         while True:
             try:
                 incoming_message = socket.recv(8192)
-                print(incoming_message)
                 self.signal = json.loads(incoming_message.decode())
+                print('self.signal: ',self.signal)
                 if not incoming_message:  # 연결이 종료됨
                     break
             except ConnectionAbortedError as e:
@@ -169,15 +196,21 @@ class MultiChatServer:
                 if self.signal[0] =="로그인":  # signal = ["로그인", ID, pw, 학생/교사]
                     self.new_login_user(socket)
                 elif self.signal[0] == "로그아웃":  # signal = ["로그아웃", ID, 이름, 학생/교사]
-                    print('로그아웃')
+                    self.user_logout()
+                elif self.signal[0] == "종료":   # signal = ["종료", ID, 이름, 학생/교사]
+                    self.remove_socket(socket)
                 elif self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
                 elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
                     self.teacher.request_db_name_list(socket)
                 elif self.signal[0] == "TCDB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
                     self.teacher.request_db_description(socket)
-                elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
-                    self.student.requests_online_teacher_list(socket)
+                elif self.signal[0] == "SCDB요청 Q&A":
+                    self.student.request_DB_QNA(socket)
+
+                #QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
+                # elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
+                #     self.student.requests_online_teacher_list(socket)
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
@@ -198,15 +231,21 @@ class MultiChatServer:
         i = 0
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
             print(client, "고객")
-            socket, (ip, port) = client
+            socket = client
             if socket == c_socket:
                 print("소켓을 제거합니다")
                 self.clients.remove(client)  # 소켓 제거
                 self.idlist.remove(self.idlist[i])
-                print(f"IP:{ip},Port:{port} 연결이 종료 되었습니다.")
-                tempdata = json.dumps(self.idlist)
-                senddata = tempdata + "985674"
-                self.send_message = senddata
+                self.student_list = []
+                self.teacher_list = []
+                for i in self.idlist:
+                    print(i)
+                    if i[2] == '학생':
+                        self.student_list.append(i)
+                    else:
+                        self.teacher_list.append(i)
+                temp_msg = ['로그인', self.student_list, self.teacher_list]
+                self.send_message = json.dumps(temp_msg)
                 self.send_all_client()
                 break
             i += 1

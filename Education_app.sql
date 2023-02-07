@@ -54,7 +54,7 @@ CREATE TABLE `memberinfo` (
   `Rank` varchar(45) DEFAULT '4',
   `Division` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`IDnum`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `memberinfo` (
 
 LOCK TABLES `memberinfo` WRITE;
 /*!40000 ALTER TABLE `memberinfo` DISABLE KEYS */;
-INSERT INTO `memberinfo` VALUES (1,'ksi','1234','김성일',0,'4','학생'),(2,'kkt','1234','김기태',0,'4','학생');
+INSERT INTO `memberinfo` VALUES (1,'ksi','1234','김성일',0,'4','학생'),(2,'kkt','1234','김기태',0,'4','학생'),(3,'lsb','1234','이상복',0,'0','선생'),(5,'jdh','1234','조동현',0,'4','선생');
 /*!40000 ALTER TABLE `memberinfo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -76,11 +76,13 @@ DROP TABLE IF EXISTS `q&a`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `q&a` (
   `Num` int NOT NULL AUTO_INCREMENT,
-  `ID_num` varchar(45) DEFAULT NULL,
+  `User_Name` varchar(45) DEFAULT NULL,
+  `Date` varchar(45) DEFAULT NULL,
   `Question` varchar(300) DEFAULT NULL,
+  `Question_contents` varchar(300) DEFAULT NULL,
   `Answer` varchar(300) DEFAULT NULL,
   PRIMARY KEY (`Num`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -89,6 +91,7 @@ CREATE TABLE `q&a` (
 
 LOCK TABLES `q&a` WRITE;
 /*!40000 ALTER TABLE `q&a` DISABLE KEYS */;
+INSERT INTO `q&a` VALUES (1,'김성일','2023-02-07','어려워여','넘나 어려워여','');
 /*!40000 ALTER TABLE `q&a` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -105,8 +108,9 @@ CREATE TABLE `test` (
   `Test_img_URL` varchar(1000) DEFAULT NULL,
   `Test_correct_answer` varchar(45) DEFAULT NULL,
   `Test_subject` varchar(45) DEFAULT NULL,
+  `Test_contents_name` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`Test_num`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +119,7 @@ CREATE TABLE `test` (
 
 LOCK TABLES `test` WRITE;
 /*!40000 ALTER TABLE `test` DISABLE KEYS */;
-INSERT INTO `test` VALUES (1,'꼬리는 연한 황갈색을 띠면서 여덟 줄의 검은 고리 모양의 가로무늬가 있는 우리나라에서 가장 큰 맹수인 이 동물은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000120_001.jpg','호랑이','동물'),(2,'천연기념물 제 218호인 이 곤충은 무엇인가요? ','http://www.nature.go.kr/fileUpload/photo/O1/ZOBL0003_1.jpg','장수하늘소','곤충'),(3,'남한에서 제주도에만 분포하고있는 이 나비의 이름은 무엇입니까?','http://www.nature.go.kr/fileUpload/photo/R1/ZREP0016_1.jpg','산굴뚝나비','곤충'),(4,'검정풍뎅이과 중 가장 대형이며 1950년대까지만 해도 서울에서 많이 볼 수 있었던 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/O1/ZOEJ0031_1.jpg','수염풍뎅이','곤충'),(5,'우리나라에 살고 있는 잠자리중 가장 작은 잠자리인 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/D1/ZDAP0008_1.jpg','꼬마잠자리','곤충'),(6,'유충일때 땅 속에 수직굴을 파고 속에 있다가 지나가는 곤충을 잡아먹는 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/O1/ZOBU0004_1.jpg','닻무늬길앞잡이','곤충'),(7,'이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/D1/ZDAP0001_1.jpg','대모잠자리','곤충'),(8,'몸은 황갈색 또는 연한 갈색이며, 앞가슴등판 가운데의 가는 세로 줄과 양 옆의 뒤쪽에 있는 둥근 무늬, 딱지날개의 가운데와 가장자리의 가는 줄 등은 흑색인 이 곤충은?','http://www.nature.go.kr/fileUpload/photo/O1/ZOEC0011_1.jpg','두점박이사슴벌레','곤충'),(9,'노란산 잠자리의 몸 색상과 무늬는 암수가 약간 다른데 성숙한 암컷의 날개에는 이 색의 무늬가 더 넓게 퍼져 있다. 이 색은 ? ','http://www.nature.go.kr/fileUpload/photo/D1/ZDAG0009_1.jpg','등황색','곤충'),(10,'상제나비는 앞뒤 날개 모두 이 색을 띈다 이 색은 ? ','http://www.nature.go.kr/fileUpload/photo/R1/ZRED0002_1.jpg','흰색','곤충');
+INSERT INTO `test` VALUES (1,'꼬리는 연한 황갈색을 띠면서 여덟 줄의 검은 고리 모양의 가로무늬가 있는 우리나라에서 가장 큰 맹수인 이 동물은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000120_001.jpg','호랑이','동물',NULL),(2,'천연기념물 제 218호인 이 곤충은 무엇인가요? ','http://www.nature.go.kr/fileUpload/photo/O1/ZOBL0003_1.jpg','장수하늘소','곤충',NULL),(3,'남한에서 제주도에만 분포하고있는 이 나비의 이름은 무엇입니까?','http://www.nature.go.kr/fileUpload/photo/R1/ZREP0016_1.jpg','산굴뚝나비','곤충',NULL),(4,'검정풍뎅이과 중 가장 대형이며 1950년대까지만 해도 서울에서 많이 볼 수 있었던 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/O1/ZOEJ0031_1.jpg','수염풍뎅이','곤충',NULL),(5,'우리나라에 살고 있는 잠자리중 가장 작은 잠자리인 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/D1/ZDAP0008_1.jpg','꼬마잠자리','곤충',NULL),(6,'유충일때 땅 속에 수직굴을 파고 속에 있다가 지나가는 곤충을 잡아먹는 이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/O1/ZOBU0004_1.jpg','닻무늬길앞잡이','곤충',NULL),(7,'이 곤충은 무엇인가?','http://www.nature.go.kr/fileUpload/photo/D1/ZDAP0001_1.jpg','대모잠자리','곤충',NULL),(8,'몸은 황갈색 또는 연한 갈색이며, 앞가슴등판 가운데의 가는 세로 줄과 양 옆의 뒤쪽에 있는 둥근 무늬, 딱지날개의 가운데와 가장자리의 가는 줄 등은 흑색인 이 곤충은?','http://www.nature.go.kr/fileUpload/photo/O1/ZOEC0011_1.jpg','두점박이사슴벌레','곤충',NULL),(9,'노란산 잠자리의 몸 색상과 무늬는 암수가 약간 다른데 성숙한 암컷의 날개에는 이 색의 무늬가 더 넓게 퍼져 있다. 이 색은 ? ','http://www.nature.go.kr/fileUpload/photo/D1/ZDAG0009_1.jpg','등황색','곤충',NULL),(10,'상제나비는 앞뒤 날개 모두 이 색을 띈다 이 색은 ? ','http://www.nature.go.kr/fileUpload/photo/R1/ZRED0002_1.jpg','흰색','곤충',NULL),(11,'고속도로에서 출몰하는 이 동물은 ? ','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000115_001.jpg','고라니','포유류','고라니(골격)'),(12,'고슴도치는 잡식성 동물이다 (O,X로 답해주세요)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000010_001.jpg','O','포유류','고슴도치'),(13,'이 동물의 이름은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000105_001.jpg','너구리','포유류','너구리'),(14,'노루는 평야 지대에 서식한다 (O,X로 답해주세요)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000093_001.jpg','X','포유류','노루'),(15,'다람쥐는 야행성이다 (O,X로 답해주세요)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000028_001.jpg','X','포유류','다람쥐'),(16,'담비는 활엽수림에서 서식한다 (O,X로 답해주세요)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000118_001.jpg','X','포유류','담비'),(17,'대륙사슴은 계절에 따라 서식장소가 다릅니다. 봄과 가을에는 초원과 산중 어디에 살까요?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000116_001.jpg','초원','포유류','대륙사슴'),(18,'이 동물은 무엇인가요 ? ','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000018_001.jpg','두더지','포유류','두더지'),(19,'멧돼지는 무리를 지어 생활한다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000117_001.jpg','O','포유류','멧돼지'),(20,'멧토끼는 1년에 5~6회 이상 번식하며 , 1회에 1~4마리의 새끼를 낳는다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000097_001.jpg','X','포유류','멧토끼'),(21,'이 동물의 이름은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000112_001.jpg','물개','포유류','물개'),(22,'사향노루는 매우 긴 꼬리를 가지고 있다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000110_001.jpg','X','포유류','사향노루'),(23,'산양은 귀소성이 없어서 온 산을 돌아다닌다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000119_001.jpg','X','포유류','산양'),(24,'이 동물의 이름은 칡이다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000092_001.jpg','X','포유류','삵'),(25,'수달의 몸은 가늘고 꼬리가 매우 길어 꼬리가 몸통길이의 1.5배이다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000065_001.jpg','X','포유류','수달'),(26,'사진과 같이 호랑이와 같은 줄무늬를 띄고있는 이 동물의 이름은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000109_001.jpg','스라소니','포유류','스라소니'),(27,'여우는 굴파기를 좋아해서 여러곳에 굴을 파고 사용한다.(O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000108_001.jpg','X','포유류','여우'),(28,'항문 위에 냄새를 분비하는 기관이 있어 황색의 악취가 나는 액체를 분비하는 이 동물은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000089_001.jpg','오소리','포유류','오소리'),(29,'족제비는 암컷이 수컷보다 크다 (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000043_001.jpg','X','포유류','족제비'),(30,'집쥐의 수명은 야외에서는 1~2년 사육상태에서는 3년이다. (O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000013_001.jpg','O','포유류','집쥐'),(31,'청솔모의 가슴, 배 부위의 털은 일년 내내 검은색이다.(O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000039_001.jpg','X','포유류','청설모'),(32,'한국에서 거의 멸종된 상태인 이 동물은 야행성 동물이다(O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000125_001.jpg','O','포유류','표범'),(33,'하늘다람쥐는 한번의 활공으로 100 m 이상 이동할수 있다.(O,X)','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000023_001.jpg','O','포유류','하늘다람쥐'),(34,'꼬리는 연한 황갈색을 띠면서 여덟 줄의 검은 고리 모양의 가로무늬가 있는 우리나라에서 가장 큰 맹수인 이 동물은?','http://www.nature.go.kr/fileUpload/animals/basic/KNAM-MM-0000120_001.jpg','호랑이','포유류','호랑이');
 /*!40000 ALTER TABLE `test` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -154,4 +158,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-06 20:53:29
+-- Dump completed on 2023-02-07 21:29:43
