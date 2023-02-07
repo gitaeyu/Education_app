@@ -699,7 +699,7 @@ border-radius:10px;
       </rect>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_26">
       <widget class="QLabel" name="lb_point_">
@@ -1206,7 +1206,7 @@ color: rgb(255, 255, 255);
         </property>
         <column>
          <property name="text">
-          <string/>
+          <string>  </string>
          </property>
         </column>
         <item>

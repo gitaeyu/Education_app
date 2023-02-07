@@ -25,18 +25,42 @@ class StudentClass:
 
     # def requests_online_teacher_list(self):
     #     self.parent.idlist
-    def request_DB_QNA(self,socket):
+
+
+    def request_DB_QNA(self, socket):
         print('DB_QNA 메서드진입')
         # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
         #                       db='education_app', charset='utf8')
         con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
+                              charset='utf8')
+        if self.parent.signal[3] == '학생':
+            sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
+        else:
+            sql = f"SELECT * FROM `q&a` "
         with con:
             with con.cursor() as cur:
-                sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
                 cur.execute(sql)
                 db_temp = cur.fetchall()
-                temp=['SC Q&A DB반환']
+                temp = ['SC Q&A DB반환']
+                for i in db_temp:
+                    temp.append(i)
+                request_db_msg = json.dumps(temp)
+                socket.sendall(request_db_msg.encode())
+                print('Q&A DB 전송완료')
+    def request_add_QNA(self,socket):  #question = [이름,날짜,문의제목,문의내용]
+        question= self.parent.signal[1::]
+        print("시발 나와라",question)
+        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+                              charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"INSERT INTO `q&a` (User_Name,Date,Question,Question_contents) VALUES('{question[0]}','{question[1]}','{question[2]}','{question[3]}')"
+                cur.execute(sql)
+                con.commit()
+                sql = f"SELECT * FROM `q&a` WHERE User_Name='{question[0]}'"
+                cur.execute(sql)
+                db_temp = cur.fetchall()
+                temp = ['SC Q&A DB반환']
                 for i in db_temp:
                     temp.append(i)
                 request_db_msg = json.dumps(temp)
@@ -251,6 +275,8 @@ class MultiChatServer:
                     self.login_id_duplicate_check(socket)
                 elif self.signal[0] == "회원가입":  # signal = ["회원가입", id,pw,chk_pw,name]
                     self.sign_up(socket)
+                elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
+                    self.student.request_add_QNA(socket)
 
                 #QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
                 # elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
