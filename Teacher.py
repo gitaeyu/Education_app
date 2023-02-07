@@ -10,12 +10,13 @@ import requests
 import xmltodict
 import pandas as pd
 import bs4
-
+from PyQt5.QtCore import QObject, pyqtSignal
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
 decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
 form_class = uic.loadUiType('./Teacher.ui')[0]
 
-
+class MessageSignal(QObject):
+    show_message = pyqtSignal(str)
 
 class Main(QMainWindow, form_class):
     Client_socket = None
@@ -25,12 +26,119 @@ class Main(QMainWindow, form_class):
         self.setupUi(self)
         self.initialize_socket(ip, port)
         self.listen_thread()
+        self.login_stack.setCurrentIndex(0)
+        self.mainstack.setCurrentIndex(0)
         self.test_update_search.clicked.connect(self.search_test_items)
         self.test_item_list_widget.itemClicked.connect(self.test_items_description)
         self.Test_Update_entry_btn.clicked.connect(self.entry_test)
         self.treeWidget.itemClicked.connect(self.on_item_clicked)
         self.item = ''
         self.test_update_search_LE.setText('')
+        # ----------------------------------------------------------
+        # 페이지 이동
+        self.btn_next.clicked.connect(self.login_move_next)
+        self.btn_prev.clicked.connect(self.login_move_prev)
+        # ----------------------------------------------------------
+        # ID 입력
+        self.le_input_ID.returnPressed.connect(self.login_move_next)
+        # ----------------------------------------------------------
+        # 로그인 체크
+        self.le_input_PW.returnPressed.connect(self.login_check)
+        self.btn_move_main.clicked.connect(self.login_check)
+        self.message_signal = MessageSignal()
+        self.message_signal.show_message.connect(self.show_message_slot)
+        # 회원가입
+        self.btn_check_id.clicked.connect(self.check_id)
+        self.le_input_id.returnPressed.connect(self.check_id)
+        self.le_input_id.textChanged.connect(self.change_id)
+        self.btn_join_finish.clicked.connect(self.check_sign_up)
+        self.btn_cancle.clicked.connect(self.move_login)
+
+    def move_login(self):
+        self.le_input_id.clear()
+        self.le_input_pw.clear()
+        self.le_check_pw.clear()
+        self.le_input_name.clear()
+        self.le_phonenum.clear()
+        self.login_stack.setCurrentIndex(0)
+
+    #회원가입
+    def change_id(self):
+        self.use_id = False
+        self.btn_check_id.setEnabled(True)
+
+    def check_id(self):
+        id = self.le_input_id.text()
+        self.serviceable = False
+        self.use_id = False
+        if len(id) < 3:
+            self.le_input_id.clear()
+            QMessageBox.information(self, "ID", "ID가 너무 짧습니다.\n3자 이상으로 입력해주세요")
+        else:
+            # DB 요청
+            conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                                   charset='utf8')
+            # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+            cursor = conn.cursor()
+            cursor.execute(f"select ID from memberinfo where ID='{id}'")
+            a = cursor.fetchone()
+            print(a)
+            conn.close()
+            if a == None:
+                self.use_id = True
+                QMessageBox.information(self, 'ID', '사용가능한 ID 입니다.')
+                self.btn_check_id.setEnabled(False)
+            else:
+                QMessageBox.critical(self, "ID", "이미 사용중인 ID 입니다.")
+    def check_sign_up(self):
+        id = self.le_input_id.text()
+        pw = self.le_input_pw.text()
+        chk_pw = self.le_check_pw.text()
+        name = self.le_input_name.text()
+        phonenum = self.le_phonenum.text()
+        self.join=[id, pw, chk_pw, name, phonenum]
+        what_NULL=['ID','PW','이름','휴대폰번호']
+        print(self.join)
+        for line_edit in self.join:
+            if line_edit =="":
+                NULL_index = self.join.index(line_edit)
+                QMessageBox.information(self, "NULL", f"{what_NULL[NULL_index]}를 입력해주세요.")
+                return
+        if self.use_id:
+            if self.join[1] == self.join[2]:
+                cursor.execute(f"insert into memberinfo (ID,Password,User_Name,Division) values('{self.join[0]}','{self.join[1]}','{self.join[3]}','학생')")
+                conn.commit()
+                conn.close()
+                QMessageBox.information(self, "ID", "회원가입이 완료되었습니다.", QMessageBox.Ok)
+                self.stackedWidget.setCurrentIndex(0)
+                self.sign_up_clear()
+        else: QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
+
+    def sign_up_clear(self):
+        self.le_input_id.clear()
+        self.le_input_pw.clear()
+        self.le_check_pw.clear()
+        self.le_input_name.clear()
+        self.le_phonenum.clear()
+    def login_check(self):
+        # signal = ["로그인", ID, PW]
+        ID = self.le_show_ID.text()
+        password = self.le_input_PW.text()
+        information = ["로그인",ID,password,'선생']
+        message = json.dumps(information)
+        self.client_socket.send(message.encode())
+    def login_move_next(self):
+        input_id = self.le_input_ID.text()
+        self.le_show_ID.setText(input_id)
+        if input_id=="":
+            QMessageBox.warning(self, 'ID 입력 오류', 'ID를 입력해주세요.')
+        else:
+            self.login_stack.setCurrentIndex(1)
+
+    def login_move_prev(self):
+        self.login_stack.setCurrentIndex(0)
+        self.le_input_ID.clear()
+        self.le_input_PW.clear()
 
     def search_test_items(self):
         self.test_item_list_widget.clear()
@@ -326,6 +434,7 @@ class Main(QMainWindow, form_class):
         """
         서버에서 전달하는 메시지를 수신하는 스레드
         """
+
         while True:
             try:
                 incoming_message = socket.recv(8192)
@@ -341,6 +450,24 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
                     self.update_description_db()
+                elif self.signal[0] == "로그인 완료" : # signal = ['로그인 완료', 3, 'lsb', '1234', '이상복', 0, '0', '선생']
+                    if self.signal[7] == '선생' :
+                        self.move_main()
+                    else :
+                        self.message_signal.show_message.emit("학생은 로그인할 수 없습니다")
+                elif self.signal[0] == "로그인 실패" :
+                    self.message_signal.show_message.emit("잘못 입력했습니다.\n다시 입력해주세요.")
+                elif self.signal[0] == "로그인" :
+                    pass
+
+    def show_message_slot(self, message):
+        QMessageBox.information(self, "메시지", message)
+    def move_main(self):
+        # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
+        self.mainstack.setCurrentIndex(1)
+        self.user_name_label.setText(f"{self.signal[4]}님 안녕하세요")
+
+
     def update_description_db(self):
         self.signal.pop(0)
         self.img_URL = self.signal[2]

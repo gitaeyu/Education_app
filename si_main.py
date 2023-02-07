@@ -38,12 +38,6 @@ class Login(QWidget, login_form_class):
         self.btn_join2.clicked.connect(self.move_join)
         self.le_input_PW.returnPressed.connect(self.move_main)
         self.btn_move_main.clicked.connect(self.move_main)
-        # ----------------------------------------------------------
-        # 로그인페이지 이미지
-        # pixmap = QPixmap('login_img.png')
-        # self.lb_login_img.setPixmap(pixmap)
-        # self.lb_login_img.move(0,0)
-        # ----------------------------------------------------------
         # 회원가입
         self.btn_check_id.clicked.connect(self.check_id)
         self.le_input_id.returnPressed.connect(self.check_id)
