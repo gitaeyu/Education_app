@@ -9,9 +9,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         (ip, port) = self.client_address
-        client = self.request, (ip, port)
-        if client not in Multi_server.clients:
-            Multi_server.clients.append(client)
         print(ip, ":", str(port), '가 연결되었습니다.')
         Multi_server.receive_messages(self.request)
 
@@ -26,8 +23,8 @@ class StudentClass:
         super().__init__()
         self.parent = parent
 
-    def requests_online_teacher_list(self):
-        self.parent.idlist
+    # def requests_online_teacher_list(self):
+    #     self.parent.idlist
 
 class TeacherClass:
     def __init__(self, parent):
@@ -99,18 +96,50 @@ class MultiChatServer:
         self.send_message = ""  # 최종 수신 메시지
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
-    def new_login_user(self): #signal = ['로그인',ID, 이름, 학생/교사]
-        temp= [self.signal[1],self.signal[2],self.signal[3]]
-        self.idlist.append(temp)
-        for i in self.idlist:
-            print(i)
-            if i[2] =='학생':
-                self.student_list.append(i)
-            else:
-                self.teacher_list.append(i)
-        temp_msg = ['로그인', self.student_list, self.teacher_list]
-        self.send_message = json.dumps(temp_msg)
-        self.send_all_client()
+
+    def new_login_user(self, socket):  # signal = ['로그인',ID, 이름, 학생/교사]
+        result = self.login_check()
+        if result == "성공":
+            if socket not in self.clients:
+                self.clients.append(socket)
+                print(self.clients)
+            temp = [self.signal[1], self.signal[2], self.signal[3]]
+            self.idlist.append(temp)
+            for i in self.idlist:
+                print(i)
+                if i[2] == '학생':
+                    self.student_list.append(i)
+                else:
+                    self.teacher_list.append(i)
+            temp_msg = ['로그인', self.student_list, self.teacher_list]
+            self.send_message = json.dumps(temp_msg)
+            self.send_all_client()
+            login_info = ['로그인 완료']  # 1, 'ksi', '1234', '김성일', 0, '4', '학생'
+            for x in self.login_user:
+                login_info.append(x)
+            # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
+            message = json.dumps(login_info)
+            socket.send(message.encode())
+        elif result == "실패":
+            information = ["로그인 실패"]
+            message = json.dumps(information)
+            socket.send(message.encode())
+
+    def login_check(self):# signal = ["로그인", ID, pw]
+        id = self.signal[1]
+        pw = self.signal[2]
+        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
+        self.login_user = cursor.fetchone()
+        print(self.login_user)  # (1, 'ksi', '1234', '김성일', 0, '4', '학생')
+        if self.login_user == None:
+            return "실패"
+        else:
+            return "성공"
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
         """
@@ -120,6 +149,7 @@ class MultiChatServer:
         while True:
             try:
                 incoming_message = socket.recv(8192)
+                print(incoming_message)
                 self.signal = json.loads(incoming_message.decode())
                 if not incoming_message:  # 연결이 종료됨
                     break
@@ -133,8 +163,8 @@ class MultiChatServer:
                 print('!!')
                 break
             else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
-                if self.signal[0] =="로그인":  # signal = ["SC학생로그인", ID, 이름, 학생/교사]
-                    self.new_login_user()
+                if self.signal[0] =="로그인":  # signal = ["로그인", ID, pw, 학생/교사]
+                    self.new_login_user(socket)
                 elif self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
                 elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
@@ -146,19 +176,14 @@ class MultiChatServer:
 
 
     def send_all_client(self):
-        """
-        모든 클라이언트에게 끝말잇기 채팅 정보를 전달함.
-        """
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
-            print(client, "고객")
-            socket, (ip, port) = client
+            socket = client
             try:
-                socket.sendall(self.send_message.encode())
+                socket.send(self.send_message.encode())
                 print('메시지 전송')
             except Exception as e:  # 연결종료
                 print(e)
                 self.clients.remove(client)  # 소켓 제거
-                print(f"{ip},{port} 연결이 종료 되었습니다.")
 
     def remove_socket(self, c_socket):
         """

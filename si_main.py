@@ -17,15 +17,21 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import *
 #서버에 전송할때 ['식별자',요청할 것들]
 
-
-login_form_class = uic.loadUiType("si_login.ui")[0]
-
-class Login(QWidget, login_form_class):
-    def __init__(self):
+contents_form_class = uic.loadUiType("si_contents.ui")[0]
+class Contents(QWidget, contents_form_class):
+    def __init__(self,parent):
         super().__init__()
-        # ui 불러오기, 객체 생성
+        self.parent = parent
         self.setupUi(self)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stw_main_stack.setCurrentIndex(0)
+        self.stw_contents.setCurrentIndex(0)
+        self.btn_show_menu_.clicked.connect(self.show_menu)
+        self.btn_hide_menu_.clicked.connect(self.hide_menu)
+        self.tw_menu_.itemClicked.connect(self.show_contents)
+        self.lw_learning_list_.itemClicked.connect(self.clicked_contents)
+        # ----------------------------------------------------------
+        # 로그인 Ui
+        self.stw_login_join.setCurrentIndex(0)
         # ----------------------------------------------------------
         # 페이지 이동
         self.btn_next.clicked.connect(self.move_next)
@@ -36,38 +42,20 @@ class Login(QWidget, login_form_class):
         # ----------------------------------------------------------
         self.btn_join.clicked.connect(self.move_join)
         self.btn_join2.clicked.connect(self.move_join)
-        self.le_input_PW.returnPressed.connect(self.move_main)
-        self.btn_move_main.clicked.connect(self.move_main)
+        self.le_input_PW.returnPressed.connect(self.login_msg_send)
+        self.btn_move_main.clicked.connect(self.login_msg_send)
         # ----------------------------------------------------------
-        # 로그인페이지 이미지
-        # pixmap = QPixmap('login_img.png')
-        # self.lb_login_img.setPixmap(pixmap)
-        # self.lb_login_img.move(0,0)
-        # ----------------------------------------------------------
-        # 회원가입
-        self.btn_check_id.clicked.connect(self.check_id)
-        self.le_input_id.returnPressed.connect(self.check_id)
-        self.le_input_id.textChanged.connect(self.change_id)
-        self.btn_join_finish.clicked.connect(self.check_sign_up)
-        self.btn_cancle.clicked.connect(self.move_login)
-
-    def move_main(self):
+    def login_msg_send(self):
         id = self.le_show_ID.text()
         pw = self.le_input_PW.text()
-        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-        #                        charset='utf8')
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
-        cursor = conn.cursor()
-        cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
-        self.login_user = cursor.fetchone()
-        if self.login_user == None:
-            QMessageBox.information(self, "로그인", "잘못 입력했습니다.\n다시 입력해주세요.")
-        else:
-
-            content = Contents(self)
-            content.show()
-            self.close()
+        login_temp = ['로그인',id,pw,'학생']
+        login_msg = json.dumps(login_temp)
+        self.parent.client_socket.sendall(login_msg.encode())
+    def login_result(self):
+        if self.parent.signal[0] == '로그인 완료':
+            self.stw_main_stack.setCurrentIndex(1)
+            self.login_user = self.parent.signal[1::]
+            self.setup_label()
 
     def move_next(self):
         input_id = self.le_input_ID.text()
@@ -75,18 +63,19 @@ class Login(QWidget, login_form_class):
         if input_id=="":
             QMessageBox.warning(self, 'ID 입력 오류', 'ID를 입력해주세요.')
         else:
-            self.stackedWidget.setCurrentIndex(1)
-
+            self.stw_login_join.setCurrentIndex(1)
     def move_prev(self):
-        self.stackedWidget.setCurrentIndex(0)
+        self.stw_login_join.setCurrentIndex(0)
         self.le_input_ID.clear()
         self.le_input_PW.clear()
     def move_join(self):
-        self.stackedWidget.setCurrentIndex(2)
+        self.stw_login_join.setCurrentIndex(2)
+    def move_login(self):
+        self.sign_up_clear()
+        self.stw_login_join.setCurrentIndex(0)
     def change_id(self):
         self.use_id = False
         self.btn_check_id.setEnabled(True)
-
     def check_id(self):
         id = self.le_input_id.text()
         self.serviceable = False
@@ -134,10 +123,9 @@ class Login(QWidget, login_form_class):
                 conn.commit()
                 conn.close()
                 QMessageBox.information(self, "ID", "회원가입이 완료되었습니다.", QMessageBox.Ok)
-                self.stackedWidget.setCurrentIndex(0)
+                self.stw_login_join.setCurrentIndex(0)
                 self.sign_up_clear()
         else: QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
-
     def sign_up_clear(self):
         self.le_input_id.clear()
         self.le_input_pw.clear()
@@ -145,38 +133,15 @@ class Login(QWidget, login_form_class):
         self.le_input_name.clear()
         self.le_phonenum.clear()
 
-
-
-    def move_login(self):
-        self.le_input_id.clear()
-        self.le_input_pw.clear()
-        self.le_check_pw.clear()
-        self.le_input_name.clear()
-        self.le_phonenum.clear()
-        self.stackedWidget.setCurrentIndex(0)
-
-contents_form_class = uic.loadUiType("si_contents.ui")[0]
-
-class Contents(QWidget, contents_form_class):
-    def __init__(self,parent):
-        super().__init__()
-        self.parent = parent
-        self.login_user = self.parent.login_user
-        # ui 불러오기, 객체 생성
-        self.setupUi(self)
+    def setup_label(self):
+        print('!!!!!',self.login_user)
         self.lb_check_name.setText(f'{self.login_user[3]}님 안녕하세요.')
-        self.lb_user_name.setText(self.login_user[3])
-        self.stw_contents.setCurrentIndex(0)
-        self.btn_show_nenu.clicked.connect(self.show_menu)
-        self.btn_hide_menu.clicked.connect(self.hide_menu)
-        self.tw_menu.itemClicked.connect(self.show_contents)
-        self.lw_learning_list.itemClicked.connect(self.clicked_contents)
-        ip = '127.0.0.1'
-        port = 9048
-        self.initialize_socket(ip, port)
-        self.listen_thread()
+        self.lb_user_name_.setText(self.login_user[3])
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
         td_time.start()
+        print('쓰레드')
+
+
     def show_menu(self):
         self.stw_menu.setCurrentIndex(1)
     def hide_menu(self):
@@ -213,7 +178,7 @@ class Contents(QWidget, contents_form_class):
 
     def learning(self, item, column):
         self.learning_name = item.text(column)
-        self.lb_learning_name.setText(f"{self.learning_name} 학습자료")
+        self.lb_learning_name_.setText(f"{self.learning_name} 학습자료")
         print(self.learning_name)
 
         self.learning_name_code = []
@@ -231,20 +196,20 @@ class Contents(QWidget, contents_form_class):
         dict = xmltodict.parse(content)  # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
         jsonString = json.dumps(dict, ensure_ascii=False)  # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
         jsonObj = json.loads(jsonString)  # 데이터 불러올 때(딕셔너리 형태로 받아옴)
-        self.lw_learning_list.clear()
+        self.lw_learning_list_.clear()
         if self.learning_name == '곤충':
             for item in jsonObj['response']['body']['items']['item']:
                 temp_list = [item['insctofnmkrlngnm'],item['insctPilbkNo'],item['imgUrl']]
                 self.learning_name_code.append(temp_list)
-                self.lw_learning_list.addItem(item['insctofnmkrlngnm'])
+                self.lw_learning_list_.addItem(item['insctofnmkrlngnm'])
         else:           #조류, 포유류일 경우
             for item in jsonObj['response']['body']['items']['item']:
                 temp_list = [item['anmlGnrlNm'],item['anmlSpecsId'],'']
                 self.learning_name_code.append(temp_list)
-                self.lw_learning_list.addItem(item['anmlGnrlNm'])
+                self.lw_learning_list_.addItem(item['anmlGnrlNm'])
     def clicked_contents(self):
-        item = self.lw_learning_list.currentItem().text()
-        self.lb_learning_img_name.setText(f"<{item}>")
+        item = self.lw_learning_list_.currentItem().text()
+        self.lb_learning_img_name_.setText(f"<{item}>")
 
         # key = '3R%2BSur%2BruWT%2F2MXwVvEJR5V39S2A5QoImBYPWyzEESJt5WwC4MEVIV5JacV50D97kscWEykWIPpB08XmaHpgnA%3D%3D'
         key = '3R+Sur+ruWT/2MXwVvEJR5V39S2A5QoImBYPWyzEESJt5WwC4MEVIV5JacV50D97kscWEykWIPpB08XmaHpgnA=='
@@ -270,24 +235,18 @@ class Contents(QWidget, contents_form_class):
         imageFromWeb = urllib.request.urlopen(img_url).read()
         qPixmapVar = QPixmap()
         qPixmapVar.loadFromData(imageFromWeb)
-        qPixmapVar = qPixmapVar.scaled(self.lb_img.width(), self.lb_img.height(), Qt.KeepAspectRatio,
+        qPixmapVar = qPixmapVar.scaled(self.lb_img_.width(), self.lb_img_.height(), Qt.KeepAspectRatio,
                                        Qt.SmoothTransformation)
-        self.lb_img.setPixmap(qPixmapVar)
+        self.lb_img_.setPixmap(qPixmapVar)
         #일반 특징 불러오기
-        self.tb_learning_content.clear()
-        self.tb_learning_content.append(f'<<{item}의 일반적인 특징>>')
-        self.tb_learning_content.append(general_features)
+        self.tb_learning_content_.clear()
+        self.tb_learning_content_.append(f'<<{item}의 일반적인 특징>>')
+        self.tb_learning_content_.append(general_features)
         #생태 특징 불러오기
-        self.tb_learning_content.append(f'\n<<{item}의 생태적인 특징>>')
+        self.tb_learning_content_.append(f'\n<<{item}의 생태적인 특징>>')
         if ecological_features==None:
-            self.tb_learning_content.append('일반적인 생태적 특징은 잘 알려지지 않았다.')
-        else: self.tb_learning_content.append(ecological_features)
-
-    def problem_solving(self, item, column):
-        print('함수들어옴')
-        question_name = item.text(column)
-        print(question_name)
-        self.lb_question_name.setText(f"{question_name} 문제풀이")
+            self.tb_learning_content_.append('일반적인 생태적 특징은 잘 알려지지 않았다.')
+        else: self.tb_learning_content_.append(ecological_features)
     def time_thread(self):
         while True:
             time.sleep(1)
@@ -296,6 +255,34 @@ class Contents(QWidget, contents_form_class):
             time_str = now.strftime('%H:%M:%S')
             self.lb_date.setText(date_str)
             self.lb_time.setText(time_str)
+    def problem_solving(self, item, column):
+        print('함수들어옴')
+        question_name = item.text(column)
+        print(question_name)
+        self.lb_question_name_.setText(f"{question_name} 문제풀이")
+
+    def online_user(self):
+        self.lw_online_teacher_.clear()
+        online_student = self.signal[1]
+        online_teacher = self.signal[2]
+        for i in online_student: # 테스트용
+            print(i[1])
+            self.lw_online_student_.addItem(i[1])
+        self.lw_online_student_.scrollToBottom()
+        for i in online_teacher:
+            print(i[1])
+            self.lw_online_teacher_.addItem(i[1])
+        self.lw_online_teacher_.scrollToBottom()
+        print('온라인유저 목록 업데이트')
+
+class Student:
+    def __init__(self):
+        ip = '127.0.0.1'
+        port = 9048
+        self.initialize_socket(ip, port)
+        self.listen_thread()
+        self.contents = Contents(self)
+        self.contents.show()
     def initialize_socket(self, ip, port):
         """
         클라이언트 소켓을 열고 서버 소켓과 연결해준다.
@@ -305,9 +292,7 @@ class Contents(QWidget, contents_form_class):
         remote_port = port
         self.client_socket.connect((remote_ip, remote_port))
         #소켓이 연결되면 로그인 정보를 서버에 전송한다.
-        login_temp = ['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
-        login_msg = json.dumps(login_temp)
-        self.client_socket.sendall(login_msg.encode())
+
     def listen_thread(self):
         """
         서버에서의 신호를 수신받는 스레드 시작
@@ -327,33 +312,18 @@ class Contents(QWidget, contents_form_class):
                 print(er)
                 break
             else:
-                if self.signal[0] == "로그인":  #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
-                    print('SC온라인교사리스트')
-                    self.online_user()
+                if self.signal[0] == "로그인 완료":  #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
+                    self.contents.login_result()
+                elif self.signal[0] == "로그인":
+                    print('시그널은 로그인')
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
-    def online_user(self):
-        self.lw_online_teacher.clear()
-        online_student = self.signal[1]
-        online_teacher = self.signal[2]
-        for i in online_student: # 테스트용
-            print(i[1])
-            self.lw_online_student.addItem(i[1])
-        self.lw_online_student.scrollToBottom()
-        for i in online_teacher:
-            print(i[1])
-            self.lw_online_teacher.addItem(i[1])
-        self.lw_online_teacher.scrollToBottom()
-        print('온라인유저 목록 업데이트')
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     widget = QtWidgets.QStackedWidget()
     # 클래스의 객체 만들기
-    login = Login()
-    # contents = Contents()
-    login.setFixedWidth(667)
-    login.setFixedHeight(800)
+    # login = Login()
+    student = Student()
+    # contents = Contents(student)
     # 프로그램 화면을 보여주는 코드
-    login.show()
     app.exec_()
