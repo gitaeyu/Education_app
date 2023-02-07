@@ -106,7 +106,7 @@ class MultiChatServer:
             self.idlist.append(temp)
             for i in self.idlist:
                 print(i)
-                if i[2] =='학생':
+                if i[3] =='학생':
                     self.student_list.append(i)
                 else:
                     self.teacher_list.append(i)
