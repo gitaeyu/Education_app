@@ -26,6 +26,8 @@ class Main(QMainWindow, form_class):
         self.setupUi(self)
         self.initialize_socket(ip, port)
         self.listen_thread()
+        self.message_signal = MessageSignal()
+        self.message_signal.show_message.connect(self.show_message_slot)
         self.login_stack.setCurrentIndex(0)
         self.mainstack.setCurrentIndex(0)
         self.test_update_search.clicked.connect(self.search_test_items)
@@ -45,8 +47,7 @@ class Main(QMainWindow, form_class):
         # 로그인 체크
         self.le_input_PW.returnPressed.connect(self.login_check)
         self.btn_move_main.clicked.connect(self.login_check)
-        self.message_signal = MessageSignal()
-        self.message_signal.show_message.connect(self.show_message_slot)
+
         # 회원가입
         self.btn_check_id.clicked.connect(self.check_id)
         self.le_input_id.returnPressed.connect(self.check_id)
