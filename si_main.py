@@ -32,6 +32,7 @@ class Contents(QWidget, contents_form_class):
         # ----------------------------------------------------------
         # 로그인 Ui
         self.stw_login_join.setCurrentIndex(0)
+        self.btn_logout.clicked.connect(self.btn_logout_clicked)
         # ----------------------------------------------------------
         # 페이지 이동
         self.btn_next.clicked.connect(self.move_next)
@@ -45,6 +46,11 @@ class Contents(QWidget, contents_form_class):
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
         # ----------------------------------------------------------
+    def btn_logout_clicked(self):
+        self.stw_main_stack.setCurrentIndex(0)
+        logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[-1]] # logout_temp = ['로그아웃', ID, 이름, 학생]
+        logout_msg = json.dumps(logout_temp)
+        self.parent.client_socket.sendall(logout_msg.encode())
     def login_msg_send(self):
         id = self.le_show_ID.text()
         pw = self.le_input_PW.text()
@@ -140,8 +146,6 @@ class Contents(QWidget, contents_form_class):
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
         td_time.start()
         print('쓰레드')
-
-
     def show_menu(self):
         self.stw_menu.setCurrentIndex(1)
     def hide_menu(self):
@@ -249,12 +253,12 @@ class Contents(QWidget, contents_form_class):
         else: self.tb_learning_content_.append(ecological_features)
     def time_thread(self):
         while True:
-            time.sleep(1)
             now = datetime.datetime.now()
             date_str = now.strftime('%Y-%m-%d')
             time_str = now.strftime('%H:%M:%S')
             self.lb_date.setText(date_str)
             self.lb_time.setText(time_str)
+            time.sleep(1)
     def problem_solving(self, item, column):
         print('함수들어옴')
         question_name = item.text(column)
