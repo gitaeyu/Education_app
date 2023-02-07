@@ -97,13 +97,14 @@ class MultiChatServer:
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
 
-    def new_login_user(self, socket):  # signal = ['로그인',ID, 이름, 학생/교사]
+    def new_login_user(self, socket):  # signal = ['로그인',ID, pw, 학생/교사]
         result = self.login_check()
         if result == "성공":
             if socket not in self.clients:
                 self.clients.append(socket)
                 print(self.clients)
-            temp = [self.signal[1], self.signal[2], self.signal[3]]
+            temp = [self.login_user[1],self.login_user[3],self.login_user[-1]]
+            print(temp)
             self.idlist.append(temp)
             for i in self.idlist:
                 print(i)
@@ -135,6 +136,8 @@ class MultiChatServer:
         cursor = conn.cursor()
         cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
         self.login_user = cursor.fetchone()
+
+
         print(self.login_user)  # (1, 'ksi', '1234', '김성일', 0, '4', '학생')
         if self.login_user == None:
             return "실패"
@@ -165,6 +168,8 @@ class MultiChatServer:
             else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
                 if self.signal[0] =="로그인":  # signal = ["로그인", ID, pw, 학생/교사]
                     self.new_login_user(socket)
+                elif self.signal[0] == "로그아웃":  # signal = ["로그아웃", ID, 이름, 학생/교사]
+                    print('로그아웃')
                 elif self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
                 elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
@@ -173,7 +178,6 @@ class MultiChatServer:
                     self.teacher.request_db_description(socket)
                 elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
                     self.student.requests_online_teacher_list(socket)
-
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해

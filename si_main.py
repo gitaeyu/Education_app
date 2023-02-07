@@ -17,6 +17,10 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import *
 #서버에 전송할때 ['식별자',요청할 것들]
 
+class MessageSignal(QObject):
+    show_message = pyqtSignal(str)
+
+
 contents_form_class = uic.loadUiType("si_contents.ui")[0]
 class Contents(QWidget, contents_form_class):
     def __init__(self,parent):
@@ -46,6 +50,16 @@ class Contents(QWidget, contents_form_class):
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
         # ----------------------------------------------------------
+        # 메시지 박스
+        self.message_signal = MessageSignal()
+        self.message_signal.show_message.connect(self.show_message_slot)
+    def show_message_slot(self, message):
+        if message == "입력하신 정보가 맞지 않습니다.":
+            title = self.parent.signal[0]
+            self.le_input_ID.clear()
+            self.le_input_PW.clear()
+            self.stw_login_join.setCurrentIndex(0)
+        QMessageBox.information(self, title, message)
     def btn_logout_clicked(self):
         self.stw_main_stack.setCurrentIndex(0)
         logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[-1]] # logout_temp = ['로그아웃', ID, 이름, 학생]
@@ -54,14 +68,13 @@ class Contents(QWidget, contents_form_class):
     def login_msg_send(self):
         id = self.le_show_ID.text()
         pw = self.le_input_PW.text()
-        login_temp = ['로그인',id,pw,'학생']
+        login_temp = ['로그인',id,pw,'학생'] # login_temp = ['로그인', ID, PW, '학생']
         login_msg = json.dumps(login_temp)
         self.parent.client_socket.sendall(login_msg.encode())
     def login_result(self):
-        if self.parent.signal[0] == '로그인 완료':
-            self.stw_main_stack.setCurrentIndex(1)
-            self.login_user = self.parent.signal[1::]
-            self.setup_label()
+        self.stw_main_stack.setCurrentIndex(1)
+        self.login_user = self.parent.signal[1::]
+        self.setup_label()
 
     def move_next(self):
         input_id = self.le_input_ID.text()
@@ -264,11 +277,22 @@ class Contents(QWidget, contents_form_class):
         question_name = item.text(column)
         print(question_name)
         self.lb_question_name_.setText(f"{question_name} 문제풀이")
+    def closeEvent(self, QCloseEvent):
+        ans = QMessageBox.question(self, "종료 확인", "종료 하시겠습니까?",
+                                   QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            print('종료')
+            QCloseEvent.accept()  # 이건 QCloseEvent가 발생하면 그렇게 행하라는 거다.
+        else:
+            print('취소')
+            QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
+
+
 
     def online_user(self):
         self.lw_online_teacher_.clear()
-        online_student = self.signal[1]
-        online_teacher = self.signal[2]
+        online_student = self.parent.signal[1]
+        online_teacher = self.parent.signal[2]
         for i in online_student: # 테스트용
             print(i[1])
             self.lw_online_student_.addItem(i[1])
@@ -318,10 +342,15 @@ class Student:
             else:
                 if self.signal[0] == "로그인 완료":  #signal = ["로그인", [학생ID, 학생이름, 학생], [교사ID, 교사이름, 교사]]
                     self.contents.login_result()
+                elif self.signal[0] == "로그인 실패":
+                    self.contents.message_signal.show_message.emit("입력하신 정보가 맞지 않습니다.")
                 elif self.signal[0] == "로그인":
-                    print('시그널은 로그인')
+                    self.contents.online_user()
+                elif self.signal[0] == "로그아웃":
+                    print('로그아웃')
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     widget = QtWidgets.QStackedWidget()
