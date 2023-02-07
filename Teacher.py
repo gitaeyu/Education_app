@@ -378,17 +378,19 @@ class Main(QMainWindow, form_class):
                     print('문제풀이')
         print(self.item)
     def entry_test(self):
-        if self.item == '' :
-            self.item = '동물'
-        test_contents = self.test_contents.text()
-        test_correct_answer = self.test_answer.text()
-        if test_contents == "문제 내용을 입력해주세요" :
+        if self.item == '':
+            self.item = '포유류'
+        test_contents = self.test_contents.text()  # 문제 내용
+        test_correct_answer = self.test_answer.text()  # 문제 정답
+        test_contents_name = self.test_item_list_widget.currentItem().text()
+        if test_contents == "문제 내용을 입력해주세요":
             return
-        information = ["문제등록", test_contents,self.img_URL,test_correct_answer,self.item]
-        print(information)
-        message = json.dumps(information)
-        self.clear_test_update()
-        self.client_socket.send(message.encode())
+        if test_correct_answer == "정답을 입력해주세요":
+            return
+        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item,test_contents_name]  # 문제내용, URL , 정답, 분류, 항목이름
+        message = json.dumps(information)  # 제이슨 변환
+        self.clear_test_update()  # 문제 등록 UI 초기화 메서드 호출
+        self.client_socket.send(message.encode())  # 서버에 정보 전달
 
     def clear_test_update(self):
         self.test_update_search_LE.clear()
