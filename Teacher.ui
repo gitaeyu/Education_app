@@ -700,7 +700,7 @@ border-radius:10px;
        </rect>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page_3">
        <widget class="QLineEdit" name="test_update_search_LE">
@@ -952,15 +952,81 @@ border-radius:10px;
        <widget class="QLabel" name="label_17">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>20</y>
+          <x>10</x>
+          <y>10</y>
           <width>181</width>
-          <height>111</height>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
          <string>Q&amp;A</string>
         </property>
+       </widget>
+       <widget class="QTextBrowser" name="textBrowser_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>240</y>
+          <width>871</width>
+          <height>341</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
+         <rect>
+          <x>730</x>
+          <y>590</y>
+          <width>141</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>답변등록</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>590</y>
+          <width>711</width>
+          <height>61</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>40</y>
+          <width>871</width>
+          <height>192</height>
+         </rect>
+        </property>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>문의 번호</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>작성자</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>제목</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>날짜</string>
+         </property>
+        </column>
        </widget>
       </widget>
       <widget class="QWidget" name="page_10">

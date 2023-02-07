@@ -449,9 +449,9 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "로그인 실패" :
                     self.message_signal.show_message.emit("잘못 입력했습니다.\n다시 입력해주세요.")
                 elif self.signal[0] == "로그인" : # signal = ['로그인', self.student_list, self.teacher_list]
-                    print(self.signal[2])
-                    for i in self.signal[2] :
-                        self.client_list_widget.addItem(i[2])
+                    print(self.signal[1])
+                    for i in self.signal[1] :
+                        self.client_list_widget.addItem(i[1])
                     # 학생 혹은 선생 목록 띄우기
                     pass
                 elif self.signal[0] == "중복 없음" :
