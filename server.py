@@ -139,6 +139,37 @@ class MultiChatServer:
             return "실패"
         else:
             return "성공"
+    def login_id_duplicate_check(self,socket):
+        id = self.signal[1]
+        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"select ID from memberinfo where ID='{id}'")
+        a = cursor.fetchone()
+        conn.close()
+        if a == None:
+            information = ["중복 없음"]
+            message = json.dumps(information)
+            socket.send(message.encode())
+        else:
+            information = ["ID 중복"]
+            message = json.dumps(information)
+            socket.send(message.encode())
+    def sign_up(self,socket):
+        # signal = ["회원가입", id,pw,name,'선생']
+        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                               charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"insert into memberinfo (ID,Password,User_Name,Division) \
+                        values('{self.signal[1]}','{self.signal[2]}','{self.signal[3]}','{self.signal[4]}')")
+        conn.commit()
+        conn.close()
+        #희희
+        information = ["가입 완료"]
+        message = json.dumps(information)
+        socket.send(message.encode())
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
         """
@@ -163,6 +194,10 @@ class MultiChatServer:
             else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
                 if self.signal[0] =="로그인":  # signal = ["로그인", ID, PW]
                     self.new_login_user(socket)
+                elif self.signal[0] =="ID중복확인":  # signal = ["ID중복확인", ID]
+                    self.login_id_duplicate_check(socket)
+                elif self.signal[0] =="회원가입":  # signal = ["회원가입", id,pw,chk_pw,name]
+                    self.sign_up(socket)
                 elif self.signal[0] == "TC문제등록":  # signal = ["문제등록", 문제내용,img_URL,test_correct_answer,종류]
                     self.teacher.testentry()
                 elif self.signal[0] == "TCDB검색요청":  # signal = ["DB검색요청", 종류, 검색어]
