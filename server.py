@@ -23,9 +23,23 @@ class StudentClass:
         super().__init__()
         self.parent = parent
 
-    def requests_online_teacher_list(self,socket):
-        self.parent.idlist
-
+    # def requests_online_teacher_list(self):
+    #     self.parent.idlist
+    def request_DB_QNA(self,socket):
+        print('DB_QNA 메서드진입')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
+                cur.execute(sql)
+                db_temp = cur.fetchall()
+                temp=['SC Q&A DB반환']
+                for i in db_temp:
+                    temp.append(i)
+                request_db_msg = json.dumps(temp)
+                socket.sendall(request_db_msg.encode())
+                print('Q&A DB 전송완료')
 class TeacherClass:
     def __init__(self, parent):
         super().__init__()
@@ -96,7 +110,18 @@ class MultiChatServer:
         self.send_message = ""  # 최종 수신 메시지
         self.student = StudentClass(self)
         self.teacher = TeacherClass(self)
-    def new_login_user(self,socket): #signal = ['로그인',ID, 이름, 학생/교사]
+
+    def user_logout(self):  # signal = ["로그아웃", ID, 이름, 학생/교사]
+        logout_user = self.signal[1::]
+        if logout_user[-1] == '학생':
+            self.student_list.remove(logout_user)
+        else:
+            self.teacher_list.remove(logout_user)
+        self.idlist.remove(logout_user)
+        temp_msg = ['로그아웃', self.student_list, self.teacher_list]
+        self.send_message = json.dumps(temp_msg)
+        self.send_all_client()
+    def new_login_user(self,socket): #signal = ['로그인',ID,pw,이름, 학생/교사]
         result = self.login_check()
         if result == "성공":
             if socket not in self.clients:
@@ -125,17 +150,6 @@ class MultiChatServer:
             information = ["로그인 실패"]
             message = json.dumps(information)
             socket.send(message.encode())
-
-    def user_logout(self):  # signal = ["로그아웃", ID, 이름, 학생/교사]
-        logout_user = self.signal[1::]
-        if logout_user[-1] == '학생':
-            self.student_list.remove(logout_user)
-        else:
-            self.teacher_list.remove(logout_user)
-        self.idlist.remove(logout_user)
-        temp_msg = ['로그아웃', self.student_list, self.teacher_list]
-        self.send_message = json.dumps(temp_msg)
-        self.send_all_client()
 
     def login_check(self):
         id = self.signal[1]
@@ -224,6 +238,7 @@ class MultiChatServer:
                     self.remove_socket(socket)
                 elif self.signal[0] == "실시간 상담" :  # signal = ["실시간상담]
                     pass
+                # elif self.signal[0] ==
 
 
     # self.clients에 더 이상 ip와 port 저장하지않아서 ip,port 빼버림 (02.07 10:40)
@@ -237,7 +252,6 @@ class MultiChatServer:
             except Exception as e:  # 연결종료
                 print(e)
                 self.clients.remove(client)  # 소켓 제거
-
 
     def remove_socket(self, c_socket):
         """

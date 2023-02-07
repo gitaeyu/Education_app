@@ -962,7 +962,7 @@ border-radius:10px;
          <string>Q&amp;A</string>
         </property>
        </widget>
-       <widget class="QTextBrowser" name="textBrowser_2">
+       <widget class="QTextBrowser" name="QnABrowser">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -972,7 +972,7 @@ border-radius:10px;
          </rect>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="QnA_register_btn">
         <property name="geometry">
          <rect>
           <x>730</x>
@@ -985,7 +985,7 @@ border-radius:10px;
          <string>답변등록</string>
         </property>
        </widget>
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="QnA_linedit">
         <property name="geometry">
          <rect>
           <x>0</x>

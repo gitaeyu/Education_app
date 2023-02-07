@@ -76,46 +76,75 @@ decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkN
 
 from bs4 import BeautifulSoup
 
+# # 인증키 저장
+# key = "11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D"
+#
+# # 인증키 정보가 들어간 url 저장
+# url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrSearch'
+# params ={'serviceKey' : decoding, 'st' : '1', 'sw' : '', 'numOfRows' : '20', 'pageNo' : '1' }
+#
+# response = requests.get(url, params=params)
+#
+# content = response.content                     # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
+# print(content)
+# dict = xmltodict.parse(content)                         # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
+# jsonString = json.dumps(dict, ensure_ascii=False)       # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
+# jsonObj = json.loads(jsonString)                        # 데이터 불러올 때(딕셔너리 형태로 받아옴)
+# animalID = []
+# for item in jsonObj['response']['body']['items']['item']:
+#     animalID.append(item['insctPilbkNo'])
+#
+#
+# for x in animalID :
+#
+#     url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrInfo'
+#     params ={'serviceKey' : decoding , 'q1' : x }
+#
+#
+#     response = requests.get(url, params=params)
+#     content = response.content  # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
+#     dict = xmltodict.parse(content)  # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
+#     jsonString = json.dumps(dict, ensure_ascii=False)  # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
+#     jsonObj = json.loads(jsonString)  # 데이터 불러올 때(딕셔너리 형태로 받아옴)
+#     print(jsonObj['response']['body']['item']['cont1'])
+#     print(jsonObj['response']['body']['item']['cont7'])
+#     print(jsonObj['response']['body']['item']['imgUrl'])
+#     print(jsonObj['response']['body']['item']['insctOfnmKrlngNm'])
+#     con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+#                           db='education_app', charset='utf8')
+#     with con:
+#         with con.cursor() as cur:
+#             sql = f"INSERT INTO 학습자료 values('곤충','{jsonObj['response']['body']['item']['insctOfnmKrlngNm']}',\
+#             '{jsonObj['response']['body']['item']['cont1']}','{jsonObj['response']['body']['item']['cont7']}',\
+#             '{jsonObj['response']['body']['item']['imgUrl']}')"
+#             cur.execute(sql)
+#             con.commit()
+import json
+import requests
+import xmltodict
+from bs4 import BeautifulSoup
+
 # 인증키 저장
-key = "11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D"
+key = "9hLG0pq40KN%2BBhZTGeB81GLvYugXZaGfg8Hx22eL9eTEViCFYQP56Jug6nsmkX0NB6gNV040HuoxRAx%2FGjVnWA%3D%3D"
 
 # 인증키 정보가 들어간 url 저장
-url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrSearch'
-params ={'serviceKey' : decoding, 'st' : '1', 'sw' : '', 'numOfRows' : '20', 'pageNo' : '1' }
+url = f"http://apis.data.go.kr/1400119/BirdService/birdIlstrInfo?serviceKey={key}&q1=A000001148"
 
-response = requests.get(url, params=params)
 
-content = response.content                     # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
-print(content)
+content = requests.get(url).content                     # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
 dict = xmltodict.parse(content)                         # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
+print(dict)
 jsonString = json.dumps(dict, ensure_ascii=False)       # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
 jsonObj = json.loads(jsonString)                        # 데이터 불러올 때(딕셔너리 형태로 받아옴)
-animalID = []
-for item in jsonObj['response']['body']['items']['item']:
-    animalID.append(item['insctPilbkNo'])
+print(jsonObj)
+print(jsonObj['response'])
+print(jsonObj['response'])
+print(jsonObj['response']['header'])
+print(jsonObj['response']['body'])
+print(jsonObj['response']['body']['item'])
+for item,value in jsonObj['response']['body']['item'].items():
+	print(item,value)
 
+for value in jsonObj['response']['body']['item'].values():
+    print(value)
 
-for x in animalID :
-
-    url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctIlstrInfo'
-    params ={'serviceKey' : decoding , 'q1' : x }
-
-
-    response = requests.get(url, params=params)
-    content = response.content  # request 모듈을 이용해서 정보 가져오기(byte형태로 가져와지는듯)
-    dict = xmltodict.parse(content)  # xmltodict 모듈을 이용해서 딕셔너리화 & 한글화
-    jsonString = json.dumps(dict, ensure_ascii=False)  # json.dumps를 이용해서 문자열화(데이터를 보낼때 이렇게 바꿔주면 될듯)
-    jsonObj = json.loads(jsonString)  # 데이터 불러올 때(딕셔너리 형태로 받아옴)
-    print(jsonObj['response']['body']['item']['cont1'])
-    print(jsonObj['response']['body']['item']['cont7'])
-    print(jsonObj['response']['body']['item']['imgUrl'])
-    print(jsonObj['response']['body']['item']['insctOfnmKrlngNm'])
-    con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-                          db='education_app', charset='utf8')
-    with con:
-        with con.cursor() as cur:
-            sql = f"INSERT INTO 학습자료 values('곤충','{jsonObj['response']['body']['item']['insctOfnmKrlngNm']}',\
-            '{jsonObj['response']['body']['item']['cont1']}','{jsonObj['response']['body']['item']['cont7']}',\
-            '{jsonObj['response']['body']['item']['imgUrl']}')"
-            cur.execute(sql)
-            con.commit()
