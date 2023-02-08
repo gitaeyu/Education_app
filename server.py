@@ -29,10 +29,10 @@ class StudentClass:
 
     def request_DB_QNA(self, socket):
         print('DB_QNA 메서드진입')
-        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-        #                       db='education_app', charset='utf8')
-        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                              charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                       charset='utf8')
         if self.parent.signal[3] == '학생':
             sql = f"SELECT * FROM `q&a` WHERE User_Name='{self.parent.signal[2]}'"
         else:
@@ -50,7 +50,9 @@ class StudentClass:
     def request_add_QNA(self,socket):  #question = [이름,날짜,문의제목,문의내용]
         question= self.parent.signal[1::]
         print("시발 나와라",question)
-        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                       charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
                               charset='utf8')
         with con:
             with con.cursor() as cur:
@@ -72,10 +74,10 @@ class TeacherClass:
         self.parent = parent
 
     def testentry(self):
-        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-        #                       db='education_app', charset='utf8')
-        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"INSERT INTO test (Test_contents,Test_img_URL,Test_correct_answer,Test_subject) values\
@@ -109,10 +111,10 @@ class TeacherClass:
     def request_db_description(self,socket):
         # signal = ["DB설명요청", 종류, 검색어]
         print(self.parent.signal)
-        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-        #                       db='education_app', charset='utf8')
-        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT 생태특징,일반특징,이미지 from 학습자료 where 분류 = '{self.parent.signal[1]}' \
@@ -145,9 +147,10 @@ class MultiChatServer:
 
     def login_id_duplicate_check(self, socket):
         id = self.signal[1]
-        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
-        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"select ID from memberinfo where ID='{id}'")
         a = cursor.fetchone()
@@ -163,9 +166,10 @@ class MultiChatServer:
 
     def sign_up(self, socket):
         # signal = ["회원가입", id,pw,name,'선생']
-        conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
-        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='education_app', charset='utf8')
+        conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"insert into memberinfo (ID,Password,User_Name,Division) \
                         values('{self.signal[1]}','{self.signal[2]}','{self.signal[3]}','{self.signal[4]}')")
@@ -220,10 +224,10 @@ class MultiChatServer:
     def login_check(self):# signal = ["로그인", ID, pw]
         id = self.signal[1]
         pw = self.signal[2]
-        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+        conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
         #                        charset='utf8')
-        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
         self.login_user = cursor.fetchone()

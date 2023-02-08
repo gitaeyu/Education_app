@@ -58,6 +58,8 @@ class Contents(QWidget, contents_form_class):
         self.message_signal.show_message.connect(self.show_message_slot)
         # 로그아웃 확인값
         self.logout_bool = False
+        # 초대장
+        self.gb_invite.hide()
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
