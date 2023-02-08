@@ -492,7 +492,7 @@ class Main(QMainWindow, form_class):
             if question_num == str(i[0]):
                 self.tb_qna.append(f"문의번호: {i[0]}\n제목: {i[3]}\t작성자: {i[1]}\n내용: {i[4]}\n")
                 if i[5]!= None:
-                    self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[5]}")
+                    self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[6]}입니다.\n{i[5]}")
                 break
     def QNA_list_update(self):
         print('메서드 진입')

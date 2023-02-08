@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1139</width>
+    <width>1200</width>
     <height>860</height>
    </rect>
   </property>
@@ -700,7 +700,7 @@ border-radius:10px;
        </rect>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page_3">
        <widget class="QLineEdit" name="test_update_search_LE">
@@ -1004,6 +1004,9 @@ border-radius:10px;
           <height>192</height>
          </rect>
         </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
@@ -1193,6 +1196,19 @@ border-radius:10px;
        <string>ㅇㅇㅇ 님 안녕하세요</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="logout_btn">
+      <property name="geometry">
+       <rect>
+        <x>1000</x>
+        <y>10</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>로그아웃</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -1201,7 +1217,7 @@ border-radius:10px;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1139</width>
+     <width>1200</width>
      <height>21</height>
     </rect>
    </property>

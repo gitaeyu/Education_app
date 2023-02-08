@@ -213,6 +213,21 @@ class MultiChatServer:
         information = ["가입 완료"]
         message = json.dumps(information)
         socket.send(message.encode())
+
+    def real_time_chat(self):
+        # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+        # ID, 이름, 학생/교사
+        count = 0
+        i=0
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[1] or id[1] == self.signal[2]: # 이름 비교
+                count+=1
+                socket = self.clients[i]
+                socket.sendall(self.signal.encode())
+            if count ==2 :
+                break
+            i += 1
+
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
         """
@@ -255,8 +270,8 @@ class MultiChatServer:
                     self.user_logout()
                 elif self.signal[0] == "종료":   # signal = ["종료", ID, 이름, 학생/교사]
                     self.remove_socket(socket)
-                elif self.signal[0] == "실시간 상담" :  # signal = ["실시간상담]
-                    pass
+                elif self.signal[0] == "실시간채팅" :  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+                    self.real_time_chat(socket)
                 elif self.signal[0] == "TC답변등록" : # signal = ["TC답변등록 ,문제번호 ,답변,답변자]
                     self.teacher.entry_answer()
 
