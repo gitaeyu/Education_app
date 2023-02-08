@@ -252,6 +252,7 @@ class MultiChatServer:
             if count ==2 :
                 break
             i += 1
+
     def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
         i = 0
         invite_msg = json.dumps(self.signal)
@@ -318,11 +319,8 @@ class MultiChatServer:
                     self.invite_message()
                 elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.invite_accept(socket)
-
-
-                #QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
-                # elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]
-                #     self.student.requests_online_teacher_list(socket)
+                elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+                    self.real_time_chat()
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해

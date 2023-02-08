@@ -58,24 +58,35 @@ class Contents(QWidget, contents_form_class):
         self.message_signal.show_message.connect(self.show_message_slot)
         # 로그아웃 확인값
         self.logout_bool = False
-        # 초대장
+        # 실시간 상담
         self.gb_invite.hide()
         self.lw_online_teacher_.itemDoubleClicked.connect(self.invite_teacher)
         self.btn_invite_Ok.clicked.connect(self.invite_OK)
         self.btn_invite_No.clicked.connect(self.invite_No)
+        self.le_message.returnPressed.connect(self.send_chat)
+        self.btn_send_message.clicked.connect(self.send_chat)
+    def chat_update(self):
+        chat_message = f"{self.signal[1]} : {self.signal[3]}"
+        self.Consult_chat_lw.addItem(self.signal[4])
+        self.Consult_chat_lw.addItem(chat_message)
     def invite_teacher(self):  # ["채팅초대", 보낸사람, 받는사람]
         teacher_name = self.lw_online_teacher_.currentItem().text()
         ans = QMessageBox.question(self, '채팅', f'{teacher_name}님을 초대하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             invite_temp = ['채팅초대', self.login_user[3], teacher_name]
             invite_msg = json.dumps(invite_temp)
-            print('json 변환')
+            print(f"{teacher_name}님에게 상담을 신청합니다.")
             self.parent.client_socket.sendall(invite_msg.encode())
-            print('sendall')
         else :
             return
-
-
+    def send_chat(self):
+        # information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+        time = self.lb_time.text()
+        send_message = self.consult_chat_le.text()
+        information = ["실시간채팅", self.login_user[3], self.invite_sender, send_message, time]
+        message = json.dumps(information)
+        self.parent.client_socket.sendall(message.encode())
+        self.le_message.clear()
 
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
@@ -375,7 +386,7 @@ class Contents(QWidget, contents_form_class):
         self.gb_invite.show()
     def invite_OK(self):
         self.stw_contents.setCurrentIndex(4) # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
-        invite_OK_temp= ['채팅수락', "대화가 시작됩니다.", self.login_user[3],self.invite_sender]
+        invite_OK_temp= ['채팅수락', f"{self.lb_time.text()}  대화가 시작됩니다.", self.login_user[3],self.invite_sender]
         invite_accept_msg = json.dumps(invite_OK_temp)
         self.parent.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
@@ -432,8 +443,11 @@ class Student:
                     print("QNA DB 반환")
                 elif self.signal[0] == "채팅초대":  #signal = ["채팅초대", 보낸사람, 받는사람]
                     self.contents.recv_invite()
+                    print(f"{self.signal[1]}님의 채팅초대")
                 elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.contents.lw_chat.addItem(self.signal[1])
+                elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+                    self.contents.chat_update()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
