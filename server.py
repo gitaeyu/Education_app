@@ -49,7 +49,6 @@ class StudentClass:
                 print('Q&A DB 전송완료')
     def request_add_QNA(self,socket):  #question = [이름,날짜,문의제목,문의내용]
         question= self.parent.signal[1::]
-        print("시발 나와라",question)
         # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
         #                       charset='utf8')
         con = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
@@ -68,6 +67,28 @@ class StudentClass:
                 request_db_msg = json.dumps(temp)
                 socket.sendall(request_db_msg.encode())
                 print('Q&A DB 전송완료')
+
+    def request_test(self,socket):  #signal = ['SCDB요청 문제', ID_Num, Test_subject]
+        ID_Num = self.parent.signal[1]
+        test_subject = self.parent.signal[2]
+
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql= f"SELECT * FROM test where  Test_subject like '%{test_subject}%' order by rand() limit 5;"
+                cur.execute(sql)
+                test_temp = cur.fetchall()
+                temp = ['SCDB요청 반환']
+                for i in test_temp:
+                    temp.append(i)
+                request_db_msg = json.dumps(temp)
+                socket.sendall(request_db_msg.encode())# ['SCDB요청 반환',[Test_num, Test_contents, Test_img_URL, Test_correct_answer, Test_subject, Test_contents_name]
+
+
+
 class TeacherClass:
     def __init__(self, parent):
         super().__init__()
@@ -221,18 +242,17 @@ class MultiChatServer:
             message = json.dumps(information)
             socket.send(message.encode())
 
-    def login_check(self):# signal = ["로그인", ID, pw]
+    def login_check(self):# signal = ["로그인", ID, pw, 학생/교사]
         id = self.signal[1]
         pw = self.signal[2]
+        div = self.signal[3]
         conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
         # conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
         #                        charset='utf8')
         cursor = conn.cursor()
-        cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}'")
+        cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}' and Division = '{div}'")
         self.login_user = cursor.fetchone()
-
-
         print(self.login_user)  # (1, 'ksi', '1234', '김성일', 0, '4', '학생')
         if self.login_user == None:
             return "실패"
@@ -270,7 +290,14 @@ class MultiChatServer:
                 r_socket.sendall(invite_msg.encode())
                 socket.sendall(invite_msg.encode())
             i += 1
-
+    def invite_already(self):  # signal= ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]
+        i = 0
+        invite_already_msg = json.dumps(self.signal)
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[3]:
+                socket = self.clients[i]
+                socket.sendall(invite_already_msg.encode())
+            i += 1
 
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
@@ -315,12 +342,16 @@ class MultiChatServer:
                     self.sign_up(socket)
                 elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
                     self.student.request_add_QNA(socket)
-                elif self.signal[0] == "채팅초대": # signal =["채팅초대", 보낸사람, 받는사람]
+                elif self.signal[0] == "채팅초대": # signal = ["채팅초대", 보낸사람, 받는사람]
                     self.invite_message()
                 elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.invite_accept(socket)
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
                     self.real_time_chat()
+                elif self.signal[0] == "이미 채팅중":  # signal = ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]
+                    self.invite_already()
+                elif self.signal[0] == 'SCDB요청 문제':  #signal = ['SCDB요청 문제', ID_Num]
+                    self.student.request_test(socket)
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
@@ -359,8 +390,6 @@ class MultiChatServer:
                 self.send_all_client()
                 break
             i += 1
-
-
 if __name__ == "__main__":
     Multi_server = MultiChatServer()
     HOST, PORT = "127.0.0.1", 9048
