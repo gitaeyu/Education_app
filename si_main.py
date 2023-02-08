@@ -49,14 +49,17 @@ class Contents(QWidget, contents_form_class):
         self.btn_join2.clicked.connect(self.move_join)
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
-        # Q&A 테이블 위젯
+        # Q&A
         self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
+        self.btn_question_finish.clicked.connect(self.question_Completed)
         # ----------------------------------------------------------
         # 메시지 박스
         self.message_signal = MessageSignal()
         self.message_signal.show_message.connect(self.show_message_slot)
         # 로그아웃 확인값
         self.logout_bool = False
+        # 초대장
+        self.gb_invite.hide()
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
@@ -68,12 +71,29 @@ class Contents(QWidget, contents_form_class):
                 if i[5]!= None:
                     self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[5]}")
                 break
+    def question_Completed(self):
+        title = self.le_question_title.text()
+        question_contents = self.te_question.toPlainText()
+        date = self.lb_date.text()
+        if title == "" or question_contents == "":
+            if title =="":
+                self.message_signal.show_message.emit("제목을 입력해주세요.")
+            else: self.message_signal.show_message.emit("내용을 입력해주세요.")
+        else:
+            question_temp = ['SCDB 문의추가',self.login_user[3],date,title,question_contents] # question_temp = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
+            question_msg = json.dumps(question_temp)
+            self.parent.client_socket.sendall(question_msg.encode())
+            self.le_question_title.clear()
+            self.te_question.clear()
+            self.message_signal.show_message.emit("문의가 등록되었습니다.")
     def show_message_slot(self, message):
+        title = self.parent.signal[0]
         if message == "입력하신 정보가 맞지 않습니다.":
             self.le_input_ID.clear()
             self.le_input_PW.clear()
             self.stw_login_join.setCurrentIndex(0)
-        title = self.parent.signal[0]
+        else:
+            title = message[0:2]
         QMessageBox.information(self, title, message)
     def btn_logout_clicked(self):
         self.stw_main_stack.setCurrentIndex(0)
@@ -93,7 +113,7 @@ class Contents(QWidget, contents_form_class):
         self.parent.client_socket.sendall(login_msg.encode())
     def login_result(self):
         self.stw_main_stack.setCurrentIndex(1)
-        self.login_user = self.parent.signal[1:]
+        self.login_user = self.parent.signal[1::]
         self.setup_label()
         self.logout_bool = False
     def move_next(self):
@@ -312,9 +332,7 @@ class Contents(QWidget, contents_form_class):
             print('취소')
             QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
 
-
-
-    def online_user(self,signal):
+    def online_user_update(self,signal):
         self.lw_online_teacher_.clear()
         self.lw_online_student_.clear()
         online_student = signal[1]
@@ -375,9 +393,9 @@ class Student:
                 elif self.signal[0] == "로그인 실패":
                     self.contents.message_signal.show_message.emit("입력하신 정보가 맞지 않습니다.")
                 elif self.signal[0] == "로그인":
-                    self.contents.online_user(self.signal)
+                    self.contents.online_user_update(self.signal)
                 elif self.signal[0] == "로그아웃":
-                    self.contents.online_user(self.signal)
+                    self.contents.online_user_update(self.signal)
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
                 elif self.signal[0] == 'SC Q&A DB반환':

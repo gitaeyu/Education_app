@@ -217,15 +217,25 @@ class MultiChatServer:
     def real_time_chat(self):
         # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         # ID, 이름, 학생/교사
+        chat_msg = json.dumps(self.signal)
         count = 0
         i=0
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
-            if id[1] == self.signal[1] or id[1] == self.signal[2]: # 이름 비교
+            if id[1] == self.signal[1] or id[1] == self.signal[2]:
                 count+=1
                 socket = self.clients[i]
-                socket.sendall(self.signal.encode())
+                socket.sendall(chat_msg.encode())
             if count ==2 :
                 break
+            i += 1
+    def invite_message(self,s_socket): # signal =["채팅초대", 보낸사람, 받는사람]
+        i = 0
+        self.signal.append(s_socket)
+        invite_msg = json.dumps(self.signal)
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[2]:
+                socket = self.clients[i]
+                socket.sendall(invite_msg.encode())
             i += 1
 
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.

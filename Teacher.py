@@ -59,6 +59,11 @@ class Main(QMainWindow, form_class):
         # QNA
         self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
         self.QnA_register_btn.clicked.connect(self.answer_register)
+
+        #실시간 채팅
+        self.gb_invite.clicked.hide()
+
+
     def answer_register(self):
         select_question = self.tw_qna_list.selectedItems()
         print(select_question)
@@ -69,6 +74,7 @@ class Main(QMainWindow, form_class):
         message = json.dumps(information)
         self.client_socket.send(message.encode())
         self.QnA_linedit.clear()
+        QMessageBox.information(self, "등록", "등록되었습니다")
 
     def move_join(self):
         self.login_stack.setCurrentIndex(2)
