@@ -238,6 +238,39 @@ class MultiChatServer:
             return "실패"
         else:
             return "성공"
+    def real_time_chat(self):
+        # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+        # ID, 이름, 학생/교사
+        chat_msg = json.dumps(self.signal)
+        count = 0
+        i=0
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[1] or id[1] == self.signal[2]:
+                count+=1
+                socket = self.clients[i]
+                socket.sendall(chat_msg.encode())
+            if count ==2 :
+                break
+            i += 1
+    def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
+        i = 0
+        invite_msg = json.dumps(self.signal)
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[2]:
+                socket = self.clients[i]
+                socket.sendall(invite_msg.encode())
+            i += 1
+    def invite_accept(self,socket): # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+        i = 0
+        invite_msg = json.dumps(self.signal)
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[3]:
+                r_socket = self.clients[i]
+                r_socket.sendall(invite_msg.encode())
+                socket.sendall(invite_msg.encode())
+            i += 1
+
+
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
         """
@@ -281,6 +314,11 @@ class MultiChatServer:
                     self.sign_up(socket)
                 elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
                     self.student.request_add_QNA(socket)
+                elif self.signal[0] == "채팅초대": # signal =["채팅초대", 보낸사람, 받는사람]
+                    self.invite_message()
+                elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+                    self.invite_accept(socket)
+
 
                 #QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
                 # elif self.signal[0] == "SC온라인교사목록":  # signal = ["SC온라인교사목록", 요청자이름]

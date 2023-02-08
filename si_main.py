@@ -60,6 +60,23 @@ class Contents(QWidget, contents_form_class):
         self.logout_bool = False
         # 초대장
         self.gb_invite.hide()
+        self.lw_online_teacher_.itemDoubleClicked.connect(self.invite_teacher)
+        self.btn_invite_Ok.clicked.connect(self.invite_OK)
+        self.btn_invite_No.clicked.connect(self.invite_No)
+    def invite_teacher(self):  # ["채팅초대", 보낸사람, 받는사람]
+        teacher_name = self.lw_online_teacher_.currentItem().text()
+        ans = QMessageBox.question(self, '채팅', f'{teacher_name}님을 초대하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            invite_temp = ['채팅초대', self.login_user[3], teacher_name]
+            invite_msg = json.dumps(invite_temp)
+            print('json 변환')
+            self.parent.client_socket.sendall(invite_msg.encode())
+            print('sendall')
+        else :
+            return
+
+
+
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
@@ -352,7 +369,19 @@ class Contents(QWidget, contents_form_class):
         for i in range(len(self.qna_list)):
             for j in range(len(self.qna_list[i])-1):
                 self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
+    def recv_invite(self): # signal = ["채팅초대", 보낸사람, 받는사람, 보낸사람 소켓]
+        self.lb_invite_message.setText(f"{self.signal[1]}님이 상담을\n신청했습니다.")
+        self.invite_sender = self.signal[1]
+        self.gb_invite.show()
+    def invite_OK(self):
+        self.stw_contents.setCurrentIndex(4) # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
+        invite_OK_temp= ['채팅수락', "대화가 시작됩니다.", self.login_user[3],self.invite_sender]
+        invite_accept_msg = json.dumps(invite_OK_temp)
+        self.parent.client_socket.sendall(invite_accept_msg.encode())
+        self.gb_invite.hide()
 
+    def invite_No(self):
+        self.gb_invite.hide()
 class Student:
     def __init__(self):
         ip = '127.0.0.1'
@@ -401,6 +430,10 @@ class Student:
                 elif self.signal[0] == 'SC Q&A DB반환':
                     self.contents.QNA_list_update()
                     print("QNA DB 반환")
+                elif self.signal[0] == "채팅초대":  #signal = ["채팅초대", 보낸사람, 받는사람]
+                    self.contents.recv_invite()
+                elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+                    self.contents.lw_chat.addItem(self.signal[1])
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>803</width>
-    <height>800</height>
+    <width>1200</width>
+    <height>860</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1191</width>
      <height>800</height>
     </rect>
    </property>
@@ -692,10 +692,10 @@ border-radius:10px;
     <widget class="QStackedWidget" name="stw_contents">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>240</x>
        <y>80</y>
-       <width>561</width>
-       <height>701</height>
+       <width>951</width>
+       <height>771</height>
       </rect>
      </property>
      <property name="currentIndex">
@@ -1106,7 +1106,7 @@ color: rgb(255, 255, 255);
     <widget class="QPushButton" name="btn_logout">
      <property name="geometry">
       <rect>
-       <x>710</x>
+       <x>1090</x>
        <y>25</y>
        <width>75</width>
        <height>23</height>
@@ -1132,7 +1132,7 @@ color: rgb(255, 255, 255);
     <widget class="QLabel" name="lb_check_name">
      <property name="geometry">
       <rect>
-       <x>560</x>
+       <x>940</x>
        <y>30</y>
        <width>141</width>
        <height>16</height>
@@ -1145,10 +1145,10 @@ color: rgb(255, 255, 255);
     <widget class="QStackedWidget" name="stw_menu">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>0</x>
        <y>10</y>
-       <width>181</width>
-       <height>791</height>
+       <width>211</width>
+       <height>851</height>
       </rect>
      </property>
      <property name="currentIndex">
@@ -1173,10 +1173,10 @@ color: rgb(255, 255, 255);
       <widget class="QGroupBox" name="groupBox_4">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>10</x>
          <y>0</y>
-         <width>171</width>
-         <height>801</height>
+         <width>201</width>
+         <height>791</height>
         </rect>
        </property>
        <property name="title">
@@ -1200,9 +1200,16 @@ color: rgb(255, 255, 255);
          <rect>
           <x>10</x>
           <y>89</y>
-          <width>151</width>
+          <width>171</width>
           <height>231</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>11</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
         <column>
          <property name="text">
@@ -1270,7 +1277,7 @@ color: rgb(255, 255, 255);
          <rect>
           <x>10</x>
           <y>360</y>
-          <width>151</width>
+          <width>171</width>
           <height>231</height>
          </rect>
         </property>
@@ -1280,9 +1287,17 @@ color: rgb(255, 255, 255);
          <rect>
           <x>52</x>
           <y>340</y>
-          <width>71</width>
-          <height>16</height>
+          <width>101</width>
+          <height>20</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>11</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
         <property name="text">
          <string>온라인 학생</string>
@@ -1291,11 +1306,19 @@ color: rgb(255, 255, 255);
        <widget class="QLabel" name="label_23">
         <property name="geometry">
          <rect>
-          <x>70</x>
+          <x>76</x>
           <y>70</y>
-          <width>41</width>
+          <width>51</width>
           <height>16</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>11</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
         <property name="text">
          <string>MENU</string>
@@ -1304,10 +1327,10 @@ color: rgb(255, 255, 255);
        <widget class="QGroupBox" name="gb_invite">
         <property name="geometry">
          <rect>
-          <x>9</x>
-          <y>639</y>
-          <width>150</width>
-          <height>131</height>
+          <x>10</x>
+          <y>610</y>
+          <width>171</width>
+          <height>141</height>
          </rect>
         </property>
         <property name="title">
@@ -1316,7 +1339,7 @@ color: rgb(255, 255, 255);
         <widget class="QPushButton" name="btn_invite_Ok">
          <property name="geometry">
           <rect>
-           <x>10</x>
+           <x>14</x>
            <y>100</y>
            <width>61</width>
            <height>23</height>
@@ -1329,7 +1352,7 @@ color: rgb(255, 255, 255);
         <widget class="QPushButton" name="btn_invite_No">
          <property name="geometry">
           <rect>
-           <x>80</x>
+           <x>94</x>
            <y>100</y>
            <width>61</width>
            <height>23</height>
@@ -1342,11 +1365,19 @@ color: rgb(255, 255, 255);
         <widget class="QLabel" name="lb_invite_message">
          <property name="geometry">
           <rect>
-           <x>30</x>
+           <x>20</x>
            <y>20</y>
-           <width>91</width>
+           <width>131</width>
            <height>71</height>
           </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>Alef</family>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="text">
           <string>000님이 상담을
