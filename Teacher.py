@@ -4,19 +4,23 @@ from threading import *
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from os import environ
-
+import time
+import datetime
 import json
 import requests
 import xmltodict
 import pandas as pd
 import bs4
 from PyQt5.QtCore import QObject, pyqtSignal
+
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
 decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
 form_class = uic.loadUiType('./Teacher.ui')[0]
 
+
 class MessageSignal(QObject):
     show_message = pyqtSignal(str)
+
 
 class Main(QMainWindow, form_class):
     Client_socket = None
@@ -59,10 +63,63 @@ class Main(QMainWindow, form_class):
         # QNA
         self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
         self.QnA_register_btn.clicked.connect(self.answer_register)
+        # 시간 스레드
+        td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
+        td_time.start()
 
-        #실시간 채팅
-        self.gb_invite.clicked.hide()
+        # 실시간 채팅 초대
+        self.gb_invite.hide()
+        self.client_list_widget.itemDoubleClicked.connect(self.invite_student)
+        self.btn_invite_Ok.clicked.connect(self.invite_OK)
+        self.btn_invite_No.clicked.connect(self.invite_No)
+        # 실시간 채팅 송신
+        self.consult_chat_le.returnPressed.connect(self.send_chat)
+        self.consult_chat_send.clicked.connect(self.send_chat)
 
+    def time_thread(self):
+        while True:
+            time.sleep(1)
+            now = datetime.datetime.now()
+            date_str = now.strftime('%Y-%m-%d')
+            time_str = now.strftime('%H:%M:%S')
+            self.lb_date.setText(date_str)
+            self.lb_time.setText(time_str)
+    def send_chat(self):
+        #information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+        time = self.lb_time.text()
+        send_message = self.consult_chat_le.text()
+        information = ["실시간채팅",self.login_user[3],self.invite_sender,send_message,time]
+        message = json.dumps(information)
+        self.client_socket.sendall(message.encode())
+        self.consult_chat_le.clear()
+    def invite_student(self):  # ["채팅초대", 보낸사람, 받는사람]
+        teacher_name = self.client_list_widget.currentItem().text()
+        ans = QMessageBox.question(self, '채팅', f'{teacher_name}님을 초대하시겠습니까?', QMessageBox.Yes | QMessageBox.No,
+                                   QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            invite_temp = ['채팅초대', self.login_user[3], teacher_name]
+            invite_msg = json.dumps(invite_temp)
+            print('json 변환')
+            self.client_socket.sendall(invite_msg.encode())
+            print('sendall')
+        else:
+            return
+
+    def recv_invite(self):  # signal = ["채팅초대", 보낸사람, 받는사람, 보낸사람 소켓]
+        self.lb_invite_message.setText(f"{self.signal[1]}님이 상담을\n신청했습니다.")
+        self.invite_sender = self.signal[1]
+        self.gb_invite.show()
+
+    def invite_OK(self):
+        self.stackedWidget.setCurrentIndex(4)  # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
+        invite_OK_temp = ['채팅수락', "대화가 시작됩니다.", self.login_user[3], self.invite_sender]
+        invite_accept_msg = json.dumps(invite_OK_temp)
+        self.client_socket.sendall(invite_accept_msg.encode())
+        self.gb_invite.hide()
+        self.client_list_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+    def invite_No(self):
+        self.gb_invite.hide()
 
     def answer_register(self):
         select_question = self.tw_qna_list.selectedItems()
@@ -70,7 +127,7 @@ class Main(QMainWindow, form_class):
         question_num = select_question[0].text()
         answer = self.QnA_linedit.text()
         answer_user_name = self.login_user[3]
-        information = ["TC답변등록", question_num,answer,answer_user_name]
+        information = ["TC답변등록", question_num, answer, answer_user_name]
         message = json.dumps(information)
         self.client_socket.send(message.encode())
         self.QnA_linedit.clear()
@@ -78,7 +135,6 @@ class Main(QMainWindow, form_class):
 
     def move_join(self):
         self.login_stack.setCurrentIndex(2)
-
 
     def move_login(self):
         self.le_input_id.clear()
@@ -88,7 +144,7 @@ class Main(QMainWindow, form_class):
         self.le_phonenum.clear()
         self.login_stack.setCurrentIndex(0)
 
-    #회원가입
+    # 회원가입
     def change_id(self):
         self.use_id = False
         self.btn_check_id.setEnabled(True)
@@ -102,29 +158,31 @@ class Main(QMainWindow, form_class):
             QMessageBox.information(self, "ID", "ID가 너무 짧습니다.\n3자 이상으로 입력해주세요")
         else:
             # DB 요청
-            information = ["ID중복확인",id]
+            information = ["ID중복확인", id]
             message = json.dumps(information)
             self.client_socket.send(message.encode())
+
     def check_sign_up(self):
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
         chk_pw = self.le_check_pw.text()
         name = self.le_input_name.text()
         phonenum = self.le_phonenum.text()
-        self.join=[id, pw, chk_pw, name, phonenum]
-        what_NULL=['ID','PW','이름','휴대폰번호']
+        self.join = [id, pw, chk_pw, name, phonenum]
+        what_NULL = ['ID', 'PW', '이름', '휴대폰번호']
         print(self.join)
         for line_edit in self.join:
-            if line_edit =="":
+            if line_edit == "":
                 NULL_index = self.join.index(line_edit)
                 QMessageBox.information(self, "NULL", f"{what_NULL[NULL_index]}를 입력해주세요.")
                 return
         if self.use_id:
             if self.join[1] == self.join[2]:
-                information = ["회원가입", id,pw,name,'선생']
+                information = ["회원가입", id, pw, name, '선생']
                 message = json.dumps(information)
                 self.client_socket.send(message.encode())
-        else: QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
+        else:
+            QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
 
     def sign_up_clear(self):
         self.le_input_id.clear()
@@ -132,17 +190,19 @@ class Main(QMainWindow, form_class):
         self.le_check_pw.clear()
         self.le_input_name.clear()
         self.le_phonenum.clear()
+
     def login_check(self):
         # signal = ["로그인", ID, PW]
         ID = self.le_show_ID.text()
         password = self.le_input_PW.text()
-        information = ["로그인",ID,password,'선생']
+        information = ["로그인", ID, password, '선생']
         message = json.dumps(information)
         self.client_socket.send(message.encode())
+
     def login_move_next(self):
         input_id = self.le_input_ID.text()
         self.le_show_ID.setText(input_id)
-        if input_id=="":
+        if input_id == "":
             QMessageBox.warning(self, 'ID 입력 오류', 'ID를 입력해주세요.')
         else:
             self.login_stack.setCurrentIndex(1)
@@ -211,6 +271,7 @@ class Main(QMainWindow, form_class):
         self.df = pd.DataFrame(result, columns=['anmlGnrlNm', 'anmlSpecsId'])
         for i in range(len(self.df)):
             self.test_item_list_widget.addItem(self.df.iloc[i]['anmlGnrlNm'])
+
     def search_test_items_bird(self):
         url = 'http://apis.data.go.kr/1400119/BirdService/birdIlstrSearch'
         params = {
@@ -250,6 +311,7 @@ class Main(QMainWindow, form_class):
         self.df = pd.DataFrame(result, columns=['anmlGnrlNm', 'anmlSpecsId'])
         for i in range(len(self.df)):
             self.test_item_list_widget.addItem(self.df.iloc[i]['anmlGnrlNm'])
+
     def search_test_items_insect(self):
         url = 'http://openapi.nature.go.kr/openapi/service/rest/InsectService/isctPrtctList'
         params = {
@@ -285,23 +347,24 @@ class Main(QMainWindow, form_class):
                 result.append(value)
 
         # xml값 DataFrame으로 만들기
-        self.df = pd.DataFrame(result, columns=['insctPilbkNo','insctofnmkrlngnm'])
+        self.df = pd.DataFrame(result, columns=['insctPilbkNo', 'insctofnmkrlngnm'])
         for i in range(len(self.df)):
             self.test_item_list_widget.addItem(self.df.iloc[i]['insctofnmkrlngnm'])
+
     def test_items_description(self):
         self.textBrowser.clear()
-        if self.item == '포유류' :
-            try :
+        if self.item == '포유류':
+            try:
                 self.test_items_description_mammal()
-            except :
+            except:
                 self.test_items_description_db()
 
-        elif self.item == '곤충' :
+        elif self.item == '곤충':
             try:
                 self.test_items_description_insect()
             except:
                 self.test_items_description_db()
-        elif self.item == '조류' :
+        elif self.item == '조류':
             try:
                 self.test_items_description_bird()
             except Exception as e:
@@ -326,6 +389,7 @@ class Main(QMainWindow, form_class):
         self.textBrowser.append(self.jsonObj['response']['body']['item']['eclgDpftrCont'])
         self.textBrowser.append('\n')
         self.textBrowser.append(self.jsonObj['response']['body']['item']['gnrlSpftrCont'])
+
     def test_items_description_bird(self):
         self.textBrowser.clear()
         temp = self.test_item_list_widget.currentRow()
@@ -344,6 +408,7 @@ class Main(QMainWindow, form_class):
         self.textBrowser.append(self.jsonObj['response']['body']['item']['eclgDpftrCont'])
         self.textBrowser.append('\n')
         self.textBrowser.append(self.jsonObj['response']['body']['item']['gnrlSpftrCont'])
+
     def test_items_description_insect(self):
         self.textBrowser.clear()
         temp = self.test_item_list_widget.currentRow()
@@ -362,12 +427,14 @@ class Main(QMainWindow, form_class):
         self.textBrowser.append(self.jsonObj['response']['body']['item']['cont1'])
         self.textBrowser.append('\n')
         self.textBrowser.append(self.jsonObj['response']['body']['item']['cont7'])
+
     def test_items_description_db(self):
         selected_item = self.test_item_list_widget.currentItem().text()
-        information = ["DB설명요청",self.item,selected_item]
+        information = ["DB설명요청", self.item, selected_item]
         message = json.dumps(information)
         self.client_socket.send(message.encode())
-    def on_item_clicked(self,item,column):
+
+    def on_item_clicked(self, item, column):
 
         self.item = item.text(column)
 
@@ -391,6 +458,7 @@ class Main(QMainWindow, form_class):
                     self.stackedWidget.setCurrentIndex(0)
                     self.clear_test_update()
         print(self.item)
+
     def entry_test(self):
         if self.item == '':
             self.item = '포유류'
@@ -401,7 +469,8 @@ class Main(QMainWindow, form_class):
             return
         if test_correct_answer == "정답을 입력해주세요":
             return
-        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item,test_contents_name]  # 문제내용, URL , 정답, 분류, 항목이름
+        information = ["TC문제등록", test_contents, self.img_URL, test_correct_answer, self.item,
+                       test_contents_name]  # 문제내용, URL , 정답, 분류, 항목이름
         message = json.dumps(information)  # 제이슨 변환
         self.clear_test_update()  # 문제 등록 UI 초기화 메서드 호출
         self.client_socket.send(message.encode())  # 서버에 정보 전달
@@ -411,7 +480,6 @@ class Main(QMainWindow, form_class):
         self.test_item_list_widget.clear()
         self.textBrowser.clear()
         self.test_contents.setText("문제 내용을 입력해주세요")
-
 
     def initialize_socket(self, ip, port):
         """
@@ -462,32 +530,41 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
                     self.update_description_db()
-                elif self.signal[0] == "로그인 완료" : # signal = ['로그인 완료', 3, 'lsb', '1234', '이상복', 0, '0', '선생']
-                    if self.signal[7] == '선생' :
+                elif self.signal[0] == "로그인 완료":  # signal = ['로그인 완료', 3, 'lsb', '1234', '이상복', 0, '0', '선생']
+                    if self.signal[7] == '선생':
                         self.move_main()
-                    else :
+                    else:
                         self.message_signal.show_message.emit("학생은 로그인할 수 없습니다")
-                elif self.signal[0] == "로그인 실패" :
+                elif self.signal[0] == "로그인 실패":
                     self.message_signal.show_message.emit("잘못 입력했습니다.\n다시 입력해주세요.")
-                elif self.signal[0] == "로그인" : # signal = ['로그인', self.student_list, self.teacher_list]
+                elif self.signal[0] == "로그인":  # signal = ['로그인', self.student_list, self.teacher_list]
                     print(self.signal[1])
-                    for i in self.signal[1] :
+                    for i in self.signal[1]:
                         self.client_list_widget.addItem(i[1])
                     # 학생 혹은 선생 목록 띄우기
                     pass
-                elif self.signal[0] == "중복 없음" :
+                elif self.signal[0] == "중복 없음":
                     self.message_signal.show_message.emit("사용가능한 ID 입니다.")
                     self.use_id = True
                     self.btn_check_id.setEnabled(False)
-                elif self.signal[0] == "ID 중복" :
+                elif self.signal[0] == "ID 중복":
                     self.message_signal.show_message.emit("이미 사용중인 ID 입니다.")
-                elif self.signal[0] == "가입 완료" :
+                elif self.signal[0] == "가입 완료":
                     self.message_signal.show_message.emit("회원가입이 완료되었습니다")
                     self.login_stack.setCurrentIndex(0)
                     self.sign_up_clear()
                 elif self.signal[0] == 'SC Q&A DB반환':
                     self.QNA_list_update()
-                    print("QNA DB 반환")
+                elif self.signal[0] == "채팅초대":  # signal = ["채팅초대", 보낸사람, 받는사람]
+                    self.recv_invite()
+                elif self.signal[0] == "채팅수락":  # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+                    self.Consult_chat_lw.addItem(self.signal[1])
+                elif self.signal[0] == "실시간채팅" : # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+                    self.chat_update()
+    def chat_update(self):
+        chat_message = f"{self.signal[1]} : {self.signal[3]}"
+        self.Consult_chat_lw.addItem(self.signal[4])
+        self.Consult_chat_lw.addItem(chat_message)
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         print(select_question)
@@ -497,25 +574,28 @@ class Main(QMainWindow, form_class):
         for i in self.qna_list:
             if question_num == str(i[0]):
                 self.tb_qna.append(f"문의번호: {i[0]}\n제목: {i[3]}\t작성자: {i[1]}\n내용: {i[4]}\n")
-                if i[5]!= None:
+                if i[5] != None:
                     self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[6]}입니다.\n{i[5]}")
                 break
+
     def QNA_list_update(self):
         print('메서드 진입')
         self.qna_list = self.signal[1:]
         self.tw_qna_list.setRowCount(len(self.qna_list))
         for i in range(len(self.qna_list)):
-            for j in range(len(self.qna_list[i])-1):
-                self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
+            for j in range(len(self.qna_list[i]) - 1):
+                self.tw_qna_list.setItem(i, j, QTableWidgetItem(str(self.qna_list[i][j])))
+
     def DB_request_QNA(self):
         # self.login_user = [1, 'ksi', '1234', '김성일', 0, '4', '학생']
         QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]
         QNA_msg = json.dumps(QNA_temp)
         self.client_socket.sendall(QNA_msg.encode())
-        print(QNA_temp,'보냄')
+        print(QNA_temp, '보냄')
 
     def show_message_slot(self, message):
         QMessageBox.information(self, "정보", message)
+
     def move_main(self):
         # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
         self.login_user = self.signal[1:]
@@ -529,12 +609,12 @@ class Main(QMainWindow, form_class):
         self.textBrowser.append(self.signal[0])
         self.textBrowser.append('\n')
         self.textBrowser.append(self.signal[1])
+
     def update_test_item_widget_db(self):
         self.test_item_list_widget.clear()
         self.signal.pop(0)
         for i in self.signal:
             self.test_item_list_widget.addItem(i)
-
 
 
 if __name__ == "__main__":

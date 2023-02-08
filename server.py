@@ -43,6 +43,27 @@ class StudentClass:
                 request_db_msg = json.dumps(temp)
                 socket.sendall(request_db_msg.encode())
                 print('Q&A DB 전송완료')
+    def request_add_QNA(self,socket):  #question = [이름,날짜,문의제목,문의내용]
+        question= self.parent.signal[1::]
+        print("시발 나와라",question)
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                       charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
+                              charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"INSERT INTO `q&a` (User_Name,Date,Question,Question_contents) VALUES('{question[0]}','{question[1]}','{question[2]}','{question[3]}')"
+                cur.execute(sql)
+                con.commit()
+                sql = f"SELECT * FROM `q&a` WHERE User_Name='{question[0]}'"
+                cur.execute(sql)
+                db_temp = cur.fetchall()
+                temp = ['SC Q&A DB반환']
+                for i in db_temp:
+                    temp.append(i)
+                request_db_msg = json.dumps(temp)
+                socket.sendall(request_db_msg.encode())
+                print('Q&A DB 전송완료')
 class TeacherClass:
     def __init__(self, parent):
         super().__init__()
@@ -228,15 +249,24 @@ class MultiChatServer:
             if count ==2 :
                 break
             i += 1
-    def invite_message(self,s_socket): # signal =["채팅초대", 보낸사람, 받는사람]
+    def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
         i = 0
-        self.signal.append(s_socket)
         invite_msg = json.dumps(self.signal)
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
             if id[1] == self.signal[2]:
                 socket = self.clients[i]
                 socket.sendall(invite_msg.encode())
             i += 1
+    def invite_accept(self,socket): # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+        i = 0
+        invite_msg = json.dumps(self.signal)
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[3]:
+                r_socket = self.clients[i]
+                r_socket.sendall(invite_msg.encode())
+                socket.sendall(invite_msg.encode())
+            i += 1
+
 
     # 데이터를 수신하여 모든 클라이언트에게 전송한다.
     def receive_messages(self, socket):
@@ -281,9 +311,15 @@ class MultiChatServer:
                 elif self.signal[0] == "종료":   # signal = ["종료", ID, 이름, 학생/교사]
                     self.remove_socket(socket)
                 elif self.signal[0] == "실시간채팅" :  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
-                    self.real_time_chat(socket)
+                    self.real_time_chat()
                 elif self.signal[0] == "TC답변등록" : # signal = ["TC답변등록 ,문제번호 ,답변,답변자]
                     self.teacher.entry_answer()
+                elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
+                    self.student.request_add_QNA(socket)
+                elif self.signal[0] == "채팅초대": # signal =["채팅초대", 보낸사람, 받는사람]
+                    self.invite_message()
+                elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+                    self.invite_accept(socket)
 
 
     # self.clients에 더 이상 ip와 port 저장하지않아서 ip,port 빼버림 (02.07 10:40)
