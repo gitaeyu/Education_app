@@ -26,7 +26,24 @@ class StudentClass:
     # def requests_online_teacher_list(self):
     #     self.parent.idlist
 
-
+    def request_test_result(self):  # signal = ['SCDB시험 결과', ID_Num,[[시험결과]]]
+        print('DB 테스트 결과 메서스진입')
+        test_ID_num = self.parent.signal[1]
+        test_result = self.parent.signal[2::]
+        print(test_result)
+        point = 0
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                for i in test_result:
+                    point += i.count('correct')*30
+                    sql = f"INSERT INTO member_test VALUES('{test_ID_num}','{i[0]}','{i[1]}','{i[2]}')"
+                    cur.execute(sql)
+                sql = f"UPDATE Memberinfo SET Point='{point}' WHERE IDnum='{test_ID_num}'"
+                cur.execute(sql)
+                con.commit()
+        print('DB에 넣음')
     def request_DB_QNA(self, socket):
         print('DB_QNA 메서드진입')
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
@@ -352,6 +369,8 @@ class MultiChatServer:
                     self.invite_already()
                 elif self.signal[0] == 'SCDB요청 문제':  #signal = ['SCDB요청 문제', ID_Num]
                     self.student.request_test(socket)
+                elif self.signal[0] == "SCDB시험 결과": # signal = ['SCDB시험 결과', ID_Num,[[시험결과]]]
+                    self.student.request_test_result()
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해

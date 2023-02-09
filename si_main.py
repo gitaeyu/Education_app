@@ -69,8 +69,9 @@ class Contents(QWidget, contents_form_class):
         self.btn_consult_end.clicked.connect(self.consult_end)
         # 문제풀이
         self.btn_test_start.clicked.connect(self.test_start)
-        self.btn_submit.clicked.connect(self.test_submit)
-
+        self.btn_submit.clicked.connect(lambda :self.test_submit(None))
+        self.btn_answer_O.clicked.connect(lambda :self.test_submit('O'))
+        self.btn_answer_X.clicked.connect(lambda: self.test_submit('X'))
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
@@ -261,19 +262,43 @@ class Contents(QWidget, contents_form_class):
         self.stw_menu.setCurrentIndex(0)
         self.test_index += 1
         self.begin = time.time()
-    def test_submit(self):
+    def test_submit(self, answer):
+        try:
+            if answer == None:
+                answer = self.le_input_answer.text()
+            self.test_paper_clear()
+            test_num = int(self.lb_test_num.text())
+            end = time.time()
+            insert_time = end - self.begin
+            if answer == self.test_list[self.test_index-1][3]:
+                result = 'correct'
+            else: result = 'wrong'
+            temp = [test_num, result, round(insert_time,2)]
+            self.test_submit_list.append(temp)
+            if self.test_index == len(self.test_list):
+                self.test_paper_clear()
+                self.test_stack_clear()
+                marking= marking_paper(self)
+                marking.exec_()
+            else: self.test_show(self.test_index)
+        except Exception as er:
+            print('에러',er)
+            self.test_paper_clear()
+            self.test_stack_clear()
+    def test_result_request(self):
+        request_temp = ['SCDB시험 결과', self.login_user[0]]  # request_temp = ['SCDB시험 결과', ID_Num,[[시험결과]]]
+        for i in self.test_submit_list:
+            request_temp.append(i)
+        request_test_result_msg = json.dumps(request_temp)
+        self.parent.client_socket.sendall(request_test_result_msg.encode())
+        print('서버에 요청함(테스트 결과)')
+    def test_paper_clear(self):
+        self.le_input_answer.clear()
+        self.lb_test_img.clear()
         self.tb_test_explanation.clear()
-        test_num = int(self.lb_test_num.text())
-        answer = self.le_input_answer.text()
-        end = time.time()
-        insert_time = end - self.begin
-        temp = [test_num, round(insert_time,2), answer]
-        print(temp)
-        self.test_submit_list.append(temp)
-        print(self.test_submit_list)
-        if self.test_index == len(self.test_list):
-            print('다섯문제 풀었음')
-        else: self.test_show(self.test_index)
+    def test_stack_clear(self):
+        self.stw_answerpaper.setCurrentIndex(0)
+        self.stw_test_timer.setCurrentIndex(0)
     def DB_request_QNA(self):
         QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
         QNA_msg = json.dumps(QNA_temp)
@@ -377,7 +402,6 @@ class Contents(QWidget, contents_form_class):
         else:
             print('취소')
             QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
-
     def online_user_update(self,signal):
         self.lw_online_teacher_.clear()
         self.lw_online_student_.clear()
@@ -516,6 +540,26 @@ class Student:
                     self.contents.message_signal.show_message.emit(self.signal[1])
                 elif self.signal[0] == "SCDB요청 반환": #signal = ['SCDB요청 반환',[Test_num, Test_contents, Test_img_URL, Test_correct_answer, Test_subject, Test_contents_name]
                     self.contents.test_show(self.contents.test_index)
+
+marking_form_class = uic.loadUiType("marking.ui")[0]
+
+
+class marking_paper(QDialog, marking_form_class):
+    def __init__(self,parent):
+        super().__init__()
+        self.parent = parent
+        self.setupUi(self)
+        self.btn_ok.clicked.connect(self.button_clicked)
+        for i in range(len(self.parent.test_submit_list)):
+            for j in range(len(self.parent.test_submit_list[i])):
+                self.tw_marking.setItem(i, j, QTableWidgetItem(str(self.parent.test_submit_list[i][j])))
+    def button_clicked(self):
+        self.close()
+        self.parent.test_result_request()
+    # def test_finish(self):
+    #     self.show()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     widget = QtWidgets.QStackedWidget()
