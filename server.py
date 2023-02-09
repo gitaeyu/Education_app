@@ -146,9 +146,10 @@ class TeacherClass:
                 bird_question_num = cur.execute(f"SELECT * FROM member_test as a inner join test as b  \
                 on a.Test_num = b.Test_num where ID_Num = {self.parent.signal[1]} and \
                 Test_subject = '조류'")
-                information = ["학생성적반환",correct_test_question_num,Total_test_question_num,insect_correct_question_num,
-                                insect_question_num,mammal_correct_question_num,mammal_question_num,
-                               bird_correct_question_num,bird_question_num]
+                information = ["학생성적반환", correct_test_question_num, Total_test_question_num,
+                               insect_correct_question_num,
+                               insect_question_num, mammal_correct_question_num, mammal_question_num,
+                               bird_correct_question_num, bird_question_num]
                 message = json.dumps(information)
                 socket.sendall(message.encode())
     def request_student_DB(self,socket):
@@ -235,6 +236,33 @@ class TeacherClass:
                 print(information)
                 message = json.dumps(information)
                 socket.sendall(message.encode())
+
+    def request_test_stat(self, socket):
+        # signal = ["TC문제통계요청"]
+        print(self.parent.signal)
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = "select *,CAST(ROUND((f.correct/f.cnt),3) AS cHAR(30)) as rate from \
+                (select a.test_num,count(case when test_result = 'correct' then 'correct' end) as correct, \
+                count(*)as cnt, b.test_contents  from member_test as a left join test as b on a.test_num = B.test_num \
+                group by a.test_num) as f order by rate  limit 5"
+                cur.execute(sql)
+                rate_list = cur.fetchall()
+                print(rate_list)
+                sql = "select a.test_num,round(avg(a.consume_time),2) as consume_time , b.test_contents \
+                from member_test as a left join test as b on a.test_num = B.test_num  group by a.test_num \
+                order by consume_time  desc limit 5;"
+                cur.execute(sql)
+                time_list = cur.fetchall()
+                print(time_list)
+                information = ["TC문제통계반환",rate_list,time_list]
+                message = json.dumps(information)
+                socket.sendall(message.encode())
+
 
 class MultiChatServer:
 
@@ -454,6 +482,8 @@ class MultiChatServer:
                     self.teacher.reqeuest_student_test_result(socket)
                 elif self.signal[0] == "학습완료": # signal = ['학습완료', IDnum, contents, IDnum+contents]
                     self.student.request_learning_completed()
+                elif self.signal[0] == "TC문제통계요청":  # signal= ["TC문제통계요청"]
+                    self.teacher.request_test_stat(socket)
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
@@ -478,19 +508,25 @@ class MultiChatServer:
             if socket == c_socket:
                 print("소켓을 제거합니다")
                 self.clients.remove(client)  # 소켓 제거
-                self.idlist.remove(self.idlist[i])
-                self.student_list = []
-                self.teacher_list = []
-                for i in self.idlist:
-                    print(i)
-                    if i[2] == '학생':
-                        self.student_list.append(i)
-                    else:
-                        self.teacher_list.append(i)
-                temp_msg = ['로그인', self.student_list, self.teacher_list]
-                self.send_message = json.dumps(temp_msg)
-                self.send_all_client()
-                break
+                try:
+                    self.idlist.remove(self.idlist[i])
+                except Exception as e :
+                    print(c_socket)
+                    print (e,"리무브 소켓 에러")
+                    pass
+                finally:
+                    self.student_list = []
+                    self.teacher_list = []
+                    for i in self.idlist:
+                        print(i)
+                        if i[2] == '학생':
+                            self.student_list.append(i)
+                        else:
+                            self.teacher_list.append(i)
+                    temp_msg = ['로그인', self.student_list, self.teacher_list]
+                    self.send_message = json.dumps(temp_msg)
+                    self.send_all_client()
+                    break
             i += 1
 
 
