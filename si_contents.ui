@@ -699,7 +699,7 @@ border-radius:10px;
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page_26">
       <widget class="QLabel" name="lb_point_">
@@ -807,7 +807,7 @@ color: rgb(255, 255, 255);
         </rect>
        </property>
        <property name="text">
-        <string>12312321321</string>
+        <string>학습</string>
        </property>
       </widget>
       <widget class="QListWidget" name="lw_learning_list_">
@@ -829,8 +829,11 @@ color: rgb(255, 255, 255);
          <height>231</height>
         </rect>
        </property>
+       <property name="styleSheet">
+        <string notr="true">border:1px solid rgb(0, 81, 255);</string>
+       </property>
        <property name="text">
-        <string>이미지</string>
+        <string/>
        </property>
       </widget>
       <widget class="QTextBrowser" name="tb_learning_content_">
@@ -881,7 +884,173 @@ color: rgb(255, 255, 255);
         </rect>
        </property>
        <property name="text">
-        <string>123213213123</string>
+        <string>00 문제풀이</string>
+       </property>
+      </widget>
+      <widget class="QStackedWidget" name="stw_test_timer">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>5</y>
+         <width>251</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page_3">
+        <widget class="QPushButton" name="btn_test_start">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>시험 시작</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="page_4"/>
+      </widget>
+      <widget class="QLabel" name="lb_test_img">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>80</y>
+         <width>251</width>
+         <height>291</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border:1px solid rgb(0, 81, 255);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QTextBrowser" name="tb_test_explanation">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>390</width>
+         <height>291</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QStackedWidget" name="stw_answerpaper">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>379</y>
+         <width>661</width>
+         <height>151</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page_5"/>
+       <widget class="QWidget" name="page_7">
+        <widget class="QPushButton" name="btn_submit">
+         <property name="geometry">
+          <rect>
+           <x>410</x>
+           <y>10</y>
+           <width>75</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>제출</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="le_input_answer">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>10</y>
+           <width>391</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="placeholderText">
+          <string>답을 입력해주세요.</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="page_6">
+        <widget class="QPushButton" name="btn_answer_X">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>10</y>
+           <width>130</width>
+           <height>101</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>Alef</family>
+           <pointsize>22</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>X</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btn_answer_O">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>10</y>
+           <width>130</width>
+           <height>101</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>Alef</family>
+           <pointsize>22</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>O</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>60</y>
+         <width>60</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>문제번호: </string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lb_test_num">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>60</y>
+         <width>56</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
        </property>
       </widget>
      </widget>
@@ -904,7 +1073,7 @@ color: rgb(255, 255, 255);
         <rect>
          <x>10</x>
          <y>510</y>
-         <width>521</width>
+         <width>611</width>
          <height>131</height>
         </rect>
        </property>
@@ -915,7 +1084,7 @@ color: rgb(255, 255, 255);
       <widget class="QPushButton" name="btn_question_finish">
        <property name="geometry">
         <rect>
-         <x>390</x>
+         <x>480</x>
          <y>649</y>
          <width>141</width>
          <height>51</height>
@@ -930,7 +1099,7 @@ color: rgb(255, 255, 255);
         <rect>
          <x>10</x>
          <y>470</y>
-         <width>521</width>
+         <width>611</width>
          <height>31</height>
         </rect>
        </property>
@@ -959,7 +1128,7 @@ color: rgb(255, 255, 255);
         <rect>
          <x>10</x>
          <y>40</y>
-         <width>521</width>
+         <width>611</width>
          <height>192</height>
         </rect>
        </property>
@@ -1006,7 +1175,7 @@ color: rgb(255, 255, 255);
         <rect>
          <x>10</x>
          <y>270</y>
-         <width>521</width>
+         <width>611</width>
          <height>151</height>
         </rect>
        </property>
@@ -1088,6 +1257,19 @@ color: rgb(255, 255, 255);
         <string>전송</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="btn_consult_end">
+       <property name="geometry">
+        <rect>
+         <x>470</x>
+         <y>614</y>
+         <width>75</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>상담 종료</string>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QLabel" name="lb_time">
@@ -1152,7 +1334,7 @@ color: rgb(255, 255, 255);
       </rect>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_24">
       <widget class="QPushButton" name="btn_show_menu_">
@@ -1176,7 +1358,7 @@ color: rgb(255, 255, 255);
          <x>10</x>
          <y>0</y>
          <width>201</width>
-         <height>791</height>
+         <height>781</height>
         </rect>
        </property>
        <property name="title">
@@ -1213,7 +1395,7 @@ color: rgb(255, 255, 255);
         </property>
         <column>
          <property name="text">
-          <string/>
+          <string>　</string>
          </property>
         </column>
         <item>
@@ -1365,7 +1547,7 @@ color: rgb(255, 255, 255);
         <widget class="QLabel" name="lb_invite_message">
          <property name="geometry">
           <rect>
-           <x>20</x>
+           <x>37</x>
            <y>20</y>
            <width>131</width>
            <height>71</height>
@@ -1374,7 +1556,7 @@ color: rgb(255, 255, 255);
          <property name="font">
           <font>
            <family>Alef</family>
-           <pointsize>12</pointsize>
+           <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
