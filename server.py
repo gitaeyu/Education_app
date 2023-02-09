@@ -23,9 +23,17 @@ class StudentClass:
         super().__init__()
         self.parent = parent
 
-    # def requests_online_teacher_list(self):
-    #     self.parent.idlist
-
+    def request_learning_completed(self):  # signal = ['학습완료', IDnum, contents, IDnum+contents]
+        print('학습완료 메서드 진입')
+        insert_db_contents = self.parent.signal[1::]
+        print(insert_db_contents)
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = f"INSERT IGNORE INTO 학습진도 VALUES ('{insert_db_contents[0]}','{insert_db_contents[1]}','{insert_db_contents[2]}');"
+                cur.execute(sql)
+                con.commit()
     def request_test_result(self):  # signal = ['SCDB시험 결과', ID_Num,[[시험결과]]]
         print('DB 테스트 결과 메서스진입')
         test_ID_num = self.parent.signal[1]
@@ -40,7 +48,7 @@ class StudentClass:
                     point += i.count('correct')*30
                     sql = f"INSERT INTO member_test VALUES('{test_ID_num}','{i[0]}','{i[1]}','{i[2]}')"
                     cur.execute(sql)
-                sql = f"UPDATE Memberinfo SET Point='{point}' WHERE IDnum='{test_ID_num}'"
+                sql = f"UPDATE Memberinfo SET Point=Point+{point} WHERE IDnum='{test_ID_num}'"
                 cur.execute(sql)
                 con.commit()
         print('DB에 넣음')
@@ -261,14 +269,15 @@ class MultiChatServer:
                 print(self.clients)
             temp = [self.login_user[1],self.login_user[3],self.login_user[-1]]
             print(temp)
-            self.idlist.append(temp)
+            if temp not in self.idlist:
+                self.idlist.append(temp)
             self.student_list=[]
             self.teacher_list=[]
             for i in self.idlist:
                 print(i)
-                if i[2] == '학생':
+                if i[2] == '학생' and i not in self.student_list:
                     self.student_list.append(i)
-                else:
+                elif i[2] == '선생' and i not in self.teacher_list:
                     self.teacher_list.append(i)
             temp_msg = ['로그인', self.student_list, self.teacher_list]
             print(temp_msg)
@@ -278,6 +287,8 @@ class MultiChatServer:
             login_info = ['로그인 완료'] # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생']
             for x in self.login_user:
                 login_info.append(x)
+            if self.login_user[6]=='학생': # login_info = ['로그인 완료', 1, 'ksi', '1234', '김성일', 0, '4', '학생', [문제, 학습진도]]
+                login_info.append(self.label_update)
             message = json.dumps(login_info)
             socket.send(message.encode())
         elif result == "실패":
@@ -297,6 +308,10 @@ class MultiChatServer:
         cursor.execute(f"select * from memberinfo where ID='{id}' and Password='{pw}' and Division = '{div}'")
         self.login_user = cursor.fetchone()
         print(self.login_user)  # (1, 'ksi', '1234', '김성일', 0, '4', '학생')
+        if div == '학생':
+            count_test = cursor.execute(f"SELECT * FROM member_test where ID_Num='{self.login_user[0]}';")
+            learning_num = cursor.execute(f"SELECT * FROM 학습진도 where IDnum='{self.login_user[0]}';")
+            self.label_update = [count_test,learning_num]
         if self.login_user == None:
             return "실패"
         else:
@@ -336,9 +351,7 @@ class MultiChatServer:
         message = json.dumps(information)
         socket.send(message.encode())
 
-    def real_time_chat(self):
-        # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
-        # ID, 이름, 학생/교사
+    def real_time_chat(self):  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         chat_msg = json.dumps(self.signal)
         count = 0
         i=0
@@ -400,7 +413,7 @@ class MultiChatServer:
                 print('!!')
                 self.remove_socket(socket)
                 break
-            else:#['로그인',self.login_user[1],self.login_user[3],self.login_user[-1]]
+            else:
                 if self.signal[0] =="로그인":  # signal = ["로그인", ID, pw, 학생/교사]
                     self.new_login_user(socket)
                 elif self.signal[0] == "ID중복확인":  # signal = ["ID중복확인", ID]
@@ -413,7 +426,7 @@ class MultiChatServer:
                     self.teacher.request_db_name_list(socket)
                 elif self.signal[0] == "TCDB설명요청":  # signal = ["DB설명요청", 종류, 검색어]
                     self.teacher.request_db_description(socket)
-                elif self.signal[0] == "SCDB요청 Q&A":
+                elif self.signal[0] == "SCDB요청 Q&A":  # signal = ['SCDB요청', ID, 이름, 학생]
                     self.student.request_DB_QNA(socket)
                 elif self.signal[0] == "로그아웃":  # signal = ["로그아웃", ID, 이름, 학생/교사]
                     self.user_logout()
@@ -439,6 +452,8 @@ class MultiChatServer:
                     self.teacher.request_student_DB(socket)
                 elif self.signal[0] == "TC시험결과요청":  # signal= ["TC시험결과요청",학생번호]
                     self.teacher.reqeuest_student_test_result(socket)
+                elif self.signal[0] == "학습완료": # signal = ['학습완료', IDnum, contents, IDnum+contents]
+                    self.student.request_learning_completed()
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
