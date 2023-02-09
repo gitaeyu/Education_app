@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page_2">
      <widget class="QGroupBox" name="groupBox">
@@ -700,7 +700,7 @@ border-radius:10px;
        </rect>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_3">
        <widget class="QLineEdit" name="test_update_search_LE">
@@ -952,7 +952,7 @@ border-radius:10px;
          </rect>
         </property>
         <property name="title">
-         <string>GroupBox</string>
+         <string>문제풀이 현황</string>
         </property>
         <widget class="QLabel" name="insect_correct_rate_lbl">
          <property name="geometry">
@@ -1207,14 +1207,93 @@ border-radius:10px;
        <widget class="QLabel" name="label_19">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>20</y>
-          <width>121</width>
+          <x>30</x>
+          <y>0</y>
+          <width>171</width>
           <height>41</height>
          </rect>
         </property>
         <property name="text">
-         <string>문제별 통계 확인 ??</string>
+         <string>정답률이 낮은 문제 5개</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="test_statistics">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>50</y>
+          <width>851</width>
+          <height>291</height>
+         </rect>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>문제 번호</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>맞춘 횟수</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>푼 횟수</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>문제 내용</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QTableWidget" name="test_statistics_2">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>400</y>
+          <width>851</width>
+          <height>291</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>문제 번호</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>소요시간</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>문제 내용</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QLabel" name="label_24">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>350</y>
+          <width>171</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>소요시간이 긴 문제 5개</string>
         </property>
        </widget>
       </widget>
@@ -1479,7 +1558,7 @@ border-radius:10px;
        <string>ㅇㅇㅇ 님 안녕하세요</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="logout_btn">
+     <widget class="QPushButton" name="btn_logout">
       <property name="geometry">
        <rect>
         <x>1000</x>
