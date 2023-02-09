@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page_2">
      <widget class="QGroupBox" name="groupBox">
@@ -700,7 +700,7 @@ border-radius:10px;
        </rect>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_3">
        <widget class="QLineEdit" name="test_update_search_LE">
@@ -932,7 +932,7 @@ border-radius:10px;
          <string>점수/통계확인 (학생별)</string>
         </property>
        </widget>
-       <widget class="QListWidget" name="listWidget">
+       <widget class="QListWidget" name="student_list_lw">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -941,6 +941,266 @@ border-radius:10px;
           <height>631</height>
          </rect>
         </property>
+       </widget>
+       <widget class="QGroupBox" name="test_result_groupbox">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>10</y>
+          <width>471</width>
+          <height>401</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>GroupBox</string>
+        </property>
+        <widget class="QLabel" name="insect_correct_rate_lbl">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>160</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_32">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>230</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>포유류</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_36">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>300</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>조류</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="correct_lbl">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>80</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>맞춘 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="insect_all_lbl">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>160</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>총 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="bird_correct_lbl">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>300</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>맞춘 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_22">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>10</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>총 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="mammal_correct_rate_lbl">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>230</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="insect_correct_lbl">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>160</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>맞춘 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_21">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>10</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>맞춘 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_27">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>곤충</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="bird_correct_rate_lbl">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>300</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_20">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>80</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>전체</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="mammal_correct_lbl">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>230</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>맞춘 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="correct_rate_lbl">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>80</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_23">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>10</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>정답률</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="mammal_all_lbl">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>230</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>총 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="bird_all_lbl">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>300</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>총 개수</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="all_lbl">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>80</y>
+           <width>81</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>총 개수</string>
+         </property>
+        </widget>
        </widget>
       </widget>
       <widget class="QWidget" name="page_8">
@@ -1126,6 +1386,19 @@ border-radius:10px;
         </property>
         <property name="text">
          <string>전송</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_consult_end">
+        <property name="geometry">
+         <rect>
+          <x>710</x>
+          <y>700</y>
+          <width>141</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>채팅종료</string>
         </property>
        </widget>
       </widget>

@@ -10,12 +10,9 @@ from PyQt5 import uic
 import requests
 import xmltodict
 import json
-
-#이미지
 import urllib.request
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import *
-#서버에 전송할때 ['식별자',요청할 것들]
 
 class MessageSignal(QObject):
     show_message = pyqtSignal(str)
@@ -70,8 +67,18 @@ class Contents(QWidget, contents_form_class):
         # 문제풀이
         self.btn_test_start.clicked.connect(self.test_start)
         self.btn_submit.clicked.connect(lambda :self.test_submit(None))
+        self.le_input_answer.returnPressed.connect(lambda :self.test_submit(None))
         self.btn_answer_O.clicked.connect(lambda :self.test_submit('O'))
         self.btn_answer_X.clicked.connect(lambda: self.test_submit('X'))
+        # 학습
+        self.btn_learning_finish_.clicked.connect(self.learning_completed)
+    def learning_completed(self): # completed_temp = ['학습완료', 1, '산굴뚝나비', '1산굴뚝나비']
+        item = self.lw_learning_list_.currentItem().text()
+        uniq_key = str(self.login_user[0]) + item
+        print(uniq_key)
+        completed_temp = ['학습완료', self.login_user[0], item, uniq_key]
+        completed_msg = json.dumps(completed_temp)
+        self.parent.client_socket.sendall(completed_msg.encode())
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
@@ -102,7 +109,7 @@ class Contents(QWidget, contents_form_class):
     def btn_logout_clicked(self):
         self.stw_main_stack.setCurrentIndex(0)
         self.stw_login_join.setCurrentIndex(0)
-        logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[-1]] # logout_temp = ['로그아웃', ID, 이름, 학생]
+        logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[6]] # logout_temp = ['로그아웃', ID, 이름, 학생]
         logout_msg = json.dumps(logout_temp)
         self.parent.client_socket.sendall(logout_msg.encode())
         self.logout_bool = True
@@ -201,9 +208,13 @@ class Contents(QWidget, contents_form_class):
         print('!!!!!',self.login_user)
         self.lb_check_name.setText(f'{self.login_user[3]}님 안녕하세요.')
         self.lb_user_name_.setText(self.login_user[3])
+        self.lb_point_num.setText(str(self.login_user[4]))
+        self.lb_rank_num.setText(self.login_user[5])
+        self.lb_question_num.setText(str(self.login_user[7][0]))
+        self.lb_learning_num.setText(str(self.login_user[7][1]))
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
         td_time.start()
-        print('쓰레드')
+        print('실시간 시간 쓰레드')
     def show_menu(self):
         self.stw_menu.setCurrentIndex(1)
     def hide_menu(self):
@@ -214,6 +225,7 @@ class Contents(QWidget, contents_form_class):
             if item_txt == "개인정보":
                 print('개인정보')
                 self.stw_contents.setCurrentIndex(0)
+                self.user_label_update()
             elif item_txt == "Q&A":
                 print('Q&A')
                 self.DB_request_QNA()
@@ -233,7 +245,10 @@ class Contents(QWidget, contents_form_class):
                         self.stw_contents.setCurrentIndex(2)
                         self.problem_solving(item,column)
         else: QMessageBox.information(self, '시험','시험중에는 이용할 수 없습니다.')
-
+    def user_label_update(self):
+        login_temp = ['로그인', self.login_user[1], self.login_user[2], '학생']  # login_temp = ['로그인', ID, PW, '학생']
+        login_msg = json.dumps(login_temp)
+        self.parent.client_socket.sendall(login_msg.encode())
     def test_start(self):
         self.test_submit_list = []
         self.test_index = 0
@@ -242,9 +257,6 @@ class Contents(QWidget, contents_form_class):
         request_test_msg = json.dumps(request_temp)
         self.parent.client_socket.sendall(request_test_msg.encode())
         print(request_test_msg, '보냄')
-
-
-
     def test_show(self, test_index): # ['SCDB요청 반환',[Test_num, Test_contents, Test_img_URL, Test_correct_answer, Test_subject, Test_contents_name]]
         self.test_list = self.parent.signal[1::]
         self.lb_test_num.setText(str(self.test_list[test_index][0]))
@@ -300,7 +312,7 @@ class Contents(QWidget, contents_form_class):
         self.stw_answerpaper.setCurrentIndex(0)
         self.stw_test_timer.setCurrentIndex(0)
     def DB_request_QNA(self):
-        QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
+        QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[6]]  # QNA_temp = ['SCDB요청', ID, 이름, 학생]
         QNA_msg = json.dumps(QNA_temp)
         self.parent.client_socket.sendall(QNA_msg.encode())
         print(QNA_temp,'보냄')
@@ -391,12 +403,11 @@ class Contents(QWidget, contents_form_class):
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
             if not self.logout_bool:
-                logout_temp = ['로그아웃', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
+                logout_temp = ['로그아웃', self.login_user[1], self.login_user[3], self.login_user[6]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
                 logout_msg = json.dumps(logout_temp)
                 self.parent.client_socket.sendall(logout_msg.encode())
-            close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[-1]]
+            close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[6]]
             close_msg = json.dumps(close_temp)
-            print('어디까지')
             self.parent.client_socket.sendall(close_msg.encode())
             QCloseEvent.accept()  # 이건 QCloseEvent가 발생하면 그렇게 행하라는 거다.
         else:
@@ -422,7 +433,6 @@ class Contents(QWidget, contents_form_class):
         for i in range(len(self.qna_list)):
             for j in range(len(self.qna_list[i])-1):
                 self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
-
     def invite_teacher(self):  # ["채팅초대", 보낸사람, 받는사람]
         if not self.consulting:
             teacher_name = self.lw_online_teacher_.currentItem().text()
@@ -478,7 +488,6 @@ class Contents(QWidget, contents_form_class):
         self.gb_invite.hide()
     def invite_No(self):
         self.gb_invite.hide()
-
 class Student:
     def __init__(self):
         ip = '127.0.0.1'
@@ -542,8 +551,6 @@ class Student:
                     self.contents.test_show(self.contents.test_index)
 
 marking_form_class = uic.loadUiType("marking.ui")[0]
-
-
 class marking_paper(QDialog, marking_form_class):
     def __init__(self,parent):
         super().__init__()
@@ -556,8 +563,7 @@ class marking_paper(QDialog, marking_form_class):
     def button_clicked(self):
         self.close()
         self.parent.test_result_request()
-    # def test_finish(self):
-    #     self.show()
+
 
 
 if __name__ == '__main__':
