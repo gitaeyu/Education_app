@@ -1,6 +1,10 @@
 import sys
 from socket import *
 from threading import *
+
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import *
+import urllib.request
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from os import environ
@@ -11,7 +15,7 @@ import requests
 import xmltodict
 import pandas as pd
 import bs4
-from PyQt5.QtCore import QObject, pyqtSignal
+
 
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
 decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
@@ -82,6 +86,10 @@ class Main(QMainWindow, form_class):
         self.test_result_groupbox.hide()
         self.student_list_lw.itemClicked.connect(self.call_student_test_result)
 
+        pixmap = QPixmap("bg.jpg")
+        pixmap = pixmap.scaled(1130, 840)
+        self.background_label.setPixmap(pixmap)
+
     def btn_logout_clicked(self):
         self.mainstack.setCurrentIndex(0)
         self.login_stack.setCurrentIndex(0)
@@ -102,11 +110,15 @@ class Main(QMainWindow, form_class):
         message = json.dumps(information)
         self.client_socket.sendall(message.encode())
 
-
     def consult_end(self):
-        self.consulting = False
-        self.btn_consult_end.hide()
-        self.Consult_chat_lw.clear()
+        if self.consulting:
+            self.Consult_chat_lw.clear()
+            self.btn_consult_end.hide()
+            self.consulting = False
+        if self.signal[0] != '상담종료':
+            consult_end_temp = ['상담종료', self.login_user[3], self.chat_partner]
+            consult_end_msg = json.dumps(consult_end_temp)
+            self.client_socket.sendall(consult_end_msg.encode())
 
     def time_thread(self):
         while True:
@@ -157,6 +169,7 @@ class Main(QMainWindow, form_class):
         self.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
         self.btn_consult_end.show()
+        self.consulting = True
 
     def invite_No(self):
         self.gb_invite.hide()
@@ -258,7 +271,6 @@ class Main(QMainWindow, form_class):
 
 
     def on_item_clicked(self, item, column):
-        self.vis = self.vioajsojdo
         self.item = item.text(column)
 
         actions = {"점수/통계확인(학생별)": (1, self.request_student_list),
@@ -310,9 +322,10 @@ class Main(QMainWindow, form_class):
         self.test_contents.setText("문제 내용을 입력해주세요")
 
     def chat_update(self):
-        chat_message = f"{self.signal[1]} : {self.signal[3]}"
-        self.Consult_chat_lw.addItem(self.signal[4])
-        self.Consult_chat_lw.addItem(chat_message)
+        if self.consulting:
+            chat_message = f"{self.signal[1]} : {self.signal[3]}"
+            self.Consult_chat_lw.addItem(self.signal[4])
+            self.Consult_chat_lw.addItem(chat_message)
 
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
@@ -395,6 +408,10 @@ class Main(QMainWindow, form_class):
                     self.recv_invite()
                 elif self.signal[0] == "채팅수락":  # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.Consult_chat_lw.addItem(self.signal[1])
+                    if self.signal[2] == self.login_user[3] :
+                        self.invite_sender = self.signal[3]
+                    else :
+                        self.invite_sender = self.signal[2]
                     self.btn_consult_end.show()
                     self.consulting = True
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
@@ -407,6 +424,8 @@ class Main(QMainWindow, form_class):
                     self.call_student_test_record()
                 elif self.signal[0] == "TC문제통계반환" : # signal = ["TC문제통계반환" , 리스트1(정답률) , 리스트2(소요시간)]
                     self.update_test_statistics()
+                elif self.signal[0] == "상담종료": # signal = ["상담종료"]
+                    self.consult_end()
     def update_test_statistics(self):
         rate_list = self.signal[1]
         time_list = self.signal[2]
@@ -753,7 +772,10 @@ class Main(QMainWindow, form_class):
             #     logout_temp = ['로그아웃', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
             #     logout_msg = json.dumps(logout_temp)
             #     self.client_socket.sendall(logout_msg.encode())
-            close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[-1]]
+            if self.login_user :
+                close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[-1]]
+            else :
+                close_temp = ["종료",'-','-','-']
             close_msg = json.dumps(close_temp)
             print('어디까지')
             self.client_socket.sendall(close_msg.encode())

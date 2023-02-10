@@ -392,13 +392,15 @@ class MultiChatServer:
                 break
             i += 1
     def consult_end(self):    # signal = ["상담종료", 보낸사람, 받는사람]
-        chat_end_temp = self.signal[0]
+        chat_end_temp = [self.signal[0]]
         chat_end_msg = json.dumps(chat_end_temp)
         i = 0
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
             if id[1] == self.signal[2]:
                 socket = self.clients[i]
                 socket.sendall(chat_end_msg.encode())
+            i+=1
+
 
     def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
         i = 0

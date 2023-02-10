@@ -79,6 +79,12 @@ class Contents(QWidget, contents_form_class):
         self.btn_answer_X.clicked.connect(lambda: self.test_submit('X'))
         # 학습
         self.btn_learning_finish_.clicked.connect(self.learning_completed)
+        # 배경
+        pixmap = QPixmap("bg.jpg")
+        pixmap = pixmap.scaled(self.background_label.width(), self.background_label.height(), Qt.KeepAspectRatio,
+                                       Qt.SmoothTransformation)
+        self.background_label.setPixmap(pixmap)
+        # self.background_label.move(,100)
     def learning_completed(self): # completed_temp = ['학습완료', 1, '산굴뚝나비', '1산굴뚝나비']
         item = self.lw_learning_list_.currentItem().text()
         uniq_key = str(self.login_user[0]) + item
@@ -458,7 +464,9 @@ class Contents(QWidget, contents_form_class):
             self.lw_chat.addItem(self.parent.signal[4])
             self.lw_chat.addItem(chat_message)
     def consult_end(self):
+        print(self.consulting)
         if self.consulting:
+            print('asdsdasdasadsadasdsadsadasd')
             self.lw_chat.clear()
             self.btn_consult_end.hide()
             self.consulting = False
@@ -482,6 +490,7 @@ class Contents(QWidget, contents_form_class):
         invite_accept_msg = json.dumps(invite_OK_temp)
         self.parent.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
+        self.consulting = True
     def invite_No(self):
         self.gb_invite.hide()
 class Student:
