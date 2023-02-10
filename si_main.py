@@ -14,11 +14,14 @@ import urllib.request
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import *
 
+
+
+# 메시지박스 클래스
 class MessageSignal(QObject):
     show_message = pyqtSignal(str)
 
 contents_form_class = uic.loadUiType("si_contents.ui")[0]
-class Contents(QWidget, contents_form_class):
+class Contents(QWidget, contents_form_class): # 학생 클라이언트 클래스
     def __init__(self,parent):
         super().__init__()
         self.parent = parent
@@ -41,8 +44,8 @@ class Contents(QWidget, contents_form_class):
         # ID 입력
         self.le_input_ID.returnPressed.connect(self.move_next)
         # ----------------------------------------------------------
-        self.btn_join.clicked.connect(self.move_join)
-        self.btn_join2.clicked.connect(self.move_join)
+        self.btn_join.clicked.connect(self.move_prev)
+        self.btn_join2.clicked.connect(self.move_prev)
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
         self.btn_check_id.clicked.connect(self.check_id)
@@ -50,8 +53,6 @@ class Contents(QWidget, contents_form_class):
         self.le_input_id.textChanged.connect(self.change_id)
         self.btn_join_finish.clicked.connect(self.check_sign_up)
         self.btn_cancle.clicked.connect(self.move_login)
-        self.btn_join.clicked.connect(self.move_join)
-        self.btn_join2.clicked.connect(self.move_join)
         # Q&A
         self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
         self.btn_question_finish.clicked.connect(self.question_Completed)
@@ -84,7 +85,9 @@ class Contents(QWidget, contents_form_class):
         pixmap = pixmap.scaled(self.background_label.width(), self.background_label.height(), Qt.KeepAspectRatio,
                                        Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
-        # self.background_label.move(,100)
+
+
+        # 학습완료 DB요청 메서드
     def learning_completed(self): # completed_temp = ['학습완료', 1, '산굴뚝나비', '1산굴뚝나비']
         item = self.lw_learning_list_.currentItem().text()
         uniq_key = str(self.login_user[0]) + item
@@ -92,6 +95,7 @@ class Contents(QWidget, contents_form_class):
         completed_temp = ['학습완료', self.login_user[0], item, uniq_key]
         completed_msg = json.dumps(completed_temp)
         self.parent.client_socket.sendall(completed_msg.encode())
+    # Q&A 리스트 클릭시 QNA 내용을 보여주는 메서드
     def show_qna(self):
         select_question = self.tw_qna_list.selectedItems()
         question_num = select_question[0].text()
@@ -103,6 +107,7 @@ class Contents(QWidget, contents_form_class):
                 if i[5]!= None:
                     self.tb_qna.append(f"답변\n>>{i[1]}님 안녕하세요.\n{i[5]}")
                 break
+    # 문의완료 메서드
     def question_Completed(self):
         title = self.le_question_title.text()
         question_contents = self.te_question.toPlainText()
@@ -119,6 +124,8 @@ class Contents(QWidget, contents_form_class):
             self.le_question_title.clear()
             self.te_question.clear()
             self.message_signal.show_message.emit("문의가 등록되었습니다.")
+
+    # 로그아웃시 서버에 로그아웃 메시지를 보냄
     def btn_logout_clicked(self):
         self.stw_main_stack.setCurrentIndex(0)
         self.stw_login_join.setCurrentIndex(0)
@@ -126,12 +133,14 @@ class Contents(QWidget, contents_form_class):
         logout_msg = json.dumps(logout_temp)
         self.parent.client_socket.sendall(logout_msg.encode())
         self.logout_bool = True
+    # 로그인시에 로그인 한 값을 보내고 확인요청하는 메서드
     def login_msg_send(self):
         id = self.le_input_ID.text()
         pw = self.le_input_PW.text()
         login_temp = ['로그인',id,pw,'학생'] # login_temp = ['로그인', ID, PW, '학생']
         login_msg = json.dumps(login_temp)
         self.parent.client_socket.sendall(login_msg.encode())
+    # 로그인 결과를 받는 메서드
     def login_result(self):
         self.login_user = self.parent.signal[1::]
         self.setup_label()
@@ -140,6 +149,7 @@ class Contents(QWidget, contents_form_class):
         self.le_input_ID.clear()
         self.le_input_PW.clear()
         self.le_show_ID.clear()
+    # 로그인시 스택변경
     def move_next(self):
         input_id = self.le_input_ID.text()
         self.le_show_ID.setText(input_id)
@@ -147,18 +157,23 @@ class Contents(QWidget, contents_form_class):
             QMessageBox.warning(self, 'ID 입력 오류', 'ID를 입력해주세요.')
         else:
             self.stw_login_join.setCurrentIndex(1)
+    # 로그인시 스택변경
     def move_prev(self):
         self.stw_login_join.setCurrentIndex(0)
         self.le_input_ID.clear()
         self.le_input_PW.clear()
-    def move_join(self):
+    # 회원가입 페이지로 스택변경
+    def move_prev(self):
         self.stw_login_join.setCurrentIndex(2)
+    # 회원가입 완료시 로그인페이지로 스택변경해주는 메서드
     def move_login(self):
         self.sign_up_clear()
         self.stw_login_join.setCurrentIndex(0)
+    # 아이디 라인에디터의 값이 변경되면 다시 중복확인을 하게 하는 메서드
     def change_id(self):
         self.use_id = False
         self.btn_check_id.setEnabled(True)
+    # 아이디 중복확인 메서드
     def check_id(self):
         print('체크아이디')
         id = self.le_input_id.text()
@@ -172,6 +187,7 @@ class Contents(QWidget, contents_form_class):
             information = ["ID중복확인", id]
             message = json.dumps(information)
             self.parent.client_socket.send(message.encode())
+    # 회원가입시 입력값 확인하는 메서드
     def check_sign_up(self):
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
@@ -193,12 +209,14 @@ class Contents(QWidget, contents_form_class):
                 self.parent.client_socket.send(message.encode())
         else:
             QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
+    # 회원가입 창에 있는 라인에디터 클리어
     def sign_up_clear(self):
         self.le_input_id.clear()
         self.le_input_pw.clear()
         self.le_check_pw.clear()
         self.le_input_name.clear()
         self.le_phonenum.clear()
+    # 로그인시 정보가 필요한 ui들 값을 넣어주는 메서드
     def setup_label(self):
         print('!!!!!',self.login_user)
         rank = 5 - (self.login_user[4]//3000)
@@ -211,10 +229,13 @@ class Contents(QWidget, contents_form_class):
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
         td_time.start()
         print('실시간 시간 쓰레드')
+    # 메뉴 스택변경
     def show_menu(self):
         self.stw_menu.setCurrentIndex(1)
+    # 메뉴 스택변경
     def hide_menu(self):
         self.stw_menu.setCurrentIndex(0)
+    # 트리위젯 클릭시 선택한 메뉴의 값을 확인 시켜주는 메서드
     def show_contents(self, item, column):
         item_txt = item.text(column)
         if self.stw_test_timer.currentIndex() == 0:
@@ -241,10 +262,12 @@ class Contents(QWidget, contents_form_class):
                         self.stw_contents.setCurrentIndex(2)
                         self.problem_solving(item,column)
         else: QMessageBox.information(self, '시험','시험중에는 이용할 수 없습니다.')
+    # 개인정보를 눌렀을 때 업데이트된 유저 정보를 받기 위해 서버에 요청함
     def user_label_update(self):
         login_temp = ['로그인', self.login_user[1], self.login_user[2], '학생']  # login_temp = ['로그인', ID, PW, '학생']
         login_msg = json.dumps(login_temp)
         self.parent.client_socket.sendall(login_msg.encode())
+    # 시험 시작시 문제요청하는 메서드
     def test_start(self):
         self.test_submit_list = []
         self.test_index = 0
@@ -253,6 +276,7 @@ class Contents(QWidget, contents_form_class):
         request_test_msg = json.dumps(request_temp)
         self.parent.client_socket.sendall(request_test_msg.encode())
         print(request_test_msg, '보냄')
+    # 서버에서 받아온 시험문제를 차례대로 보여주는 메서드
     def test_show(self, test_index): # ['SCDB요청 반환',[Test_num, Test_contents, Test_img_URL, Test_correct_answer, Test_subject, Test_contents_name]]
         self.test_list = self.parent.signal[1::]
         self.lb_test_num.setText(str(self.test_list[test_index][0]))
@@ -270,6 +294,7 @@ class Contents(QWidget, contents_form_class):
         self.stw_menu.setCurrentIndex(0)
         self.test_index += 1
         self.begin = time.time()
+    # 정답 체점해서 차례대로 담고 끝났을 경우 test_result_request을 실행시키는 메서드
     def test_submit(self, answer):
         try:
             if answer == None:
@@ -293,6 +318,7 @@ class Contents(QWidget, contents_form_class):
             print('에러',er)
             self.test_paper_clear()
             self.test_stack_clear()
+    # 서버에 체점한 값을 보내주는 메서드
     def test_result_request(self):
         request_temp = ['SCDB시험 결과', self.login_user[0]]  # request_temp = ['SCDB시험 결과', ID_Num,[[시험결과]]]
         for i in self.test_submit_list:
@@ -300,18 +326,31 @@ class Contents(QWidget, contents_form_class):
         request_test_result_msg = json.dumps(request_temp)
         self.parent.client_socket.sendall(request_test_result_msg.encode())
         print('서버에 요청함(테스트 결과)')
+    # 시험지 클리어
     def test_paper_clear(self):
         self.le_input_answer.clear()
         self.lb_test_img.clear()
         self.tb_test_explanation.clear()
+    # 시험이 끝날 경우 실행되는 메서드
     def test_stack_clear(self):
         self.stw_answerpaper.setCurrentIndex(0)
         self.stw_test_timer.setCurrentIndex(0)
+    # QNA DB 값을 요청하는 메서드
     def DB_request_QNA(self):
         QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[6]]  # QNA_temp = ['SCDB요청', ID, 이름, 학생]
         QNA_msg = json.dumps(QNA_temp)
         self.parent.client_socket.sendall(QNA_msg.encode())
         print(QNA_temp,'보냄')
+
+    # QNA를 테이블 위젯에 넣어주는 메서드
+    def QNA_list_update(self):
+        print('메서드 진입')
+        self.qna_list = self.parent.signal[1::]
+        self.tw_qna_list.setRowCount(len(self.qna_list))
+        for i in range(len(self.qna_list)):
+            for j in range(len(self.qna_list[i]) - 1):
+                self.tw_qna_list.setItem(i, j, QTableWidgetItem(str(self.qna_list[i][j])))
+    # 어떤 학습자료인지 확인하고 해당 하는 자료의 API를 불러오는 메서드
     def learning(self, item, column):
         self.learning_name = item.text(column)
         self.lb_learning_name_.setText(f"{self.learning_name} 학습자료")
@@ -342,6 +381,7 @@ class Contents(QWidget, contents_form_class):
                 temp_list = [item['anmlGnrlNm'],item['anmlSpecsId'],'']
                 self.learning_name_code.append(temp_list)
                 self.lw_learning_list_.addItem(item['anmlGnrlNm'])
+    # API 자료를 가져와서 해당 동물의 이미지와 설명을 보여주는 메서드
     def clicked_contents(self):
         item = self.lw_learning_list_.currentItem().text()
         self.lb_learning_img_name_.setText(f"<{item}>")
@@ -381,6 +421,7 @@ class Contents(QWidget, contents_form_class):
         if ecological_features==None:
             self.tb_learning_content_.append('일반적인 생태적 특징은 잘 알려지지 않았다.')
         else: self.tb_learning_content_.append(ecological_features)
+    # 실시간 시간 띄워주는 쓰레드 메서드
     def time_thread(self):
         while True:
             now = datetime.datetime.now()
@@ -389,11 +430,13 @@ class Contents(QWidget, contents_form_class):
             self.lb_date.setText(date_str)
             self.lb_time.setText(time_str)
             time.sleep(1)
+    # 문제풀이 종류 확인하는 메서드
     def problem_solving(self, item, column):
         print('함수들어옴')
         question_name = item.text(column)
         print(question_name)
         self.lb_question_name_.setText(f"{question_name} 문제풀이")
+    # 종료이벤트 로그아웃 하기전에 종료하면 로그아웃 부터 시키고 종료시킴
     def closeEvent(self, QCloseEvent):
         ans = QMessageBox.question(self, "종료 확인", "종료 하시겠습니까?",
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -409,6 +452,7 @@ class Contents(QWidget, contents_form_class):
         else:
             print('취소')
             QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
+    # 유저 로그인/로그아웃시 온라인한 유저의 리스를 다시 업데이트 하는 메서드
     def online_user_update(self,signal):
         self.lw_online_teacher_.clear()
         self.lw_online_student_.clear()
@@ -419,13 +463,8 @@ class Contents(QWidget, contents_form_class):
         for i in online_teacher:
             self.lw_online_teacher_.addItem(i[1])
         print('온라인유저 목록 업데이트')
-    def QNA_list_update(self):
-        print('메서드 진입')
-        self.qna_list = self.parent.signal[1::]
-        self.tw_qna_list.setRowCount(len(self.qna_list))
-        for i in range(len(self.qna_list)):
-            for j in range(len(self.qna_list[i])-1):
-                self.tw_qna_list.setItem(i,j, QTableWidgetItem(str(self.qna_list[i][j])))
+    # 선생님에게 상담신청을 하면 서버에 메시지를 보내는 메서드
+
     def invite_teacher(self):  # ["채팅초대", 보낸사람, 받는사람]
         if not self.consulting:
             teacher_name = self.lw_online_teacher_.currentItem().text()
@@ -436,6 +475,7 @@ class Contents(QWidget, contents_form_class):
                 print(f"{teacher_name}님에게 상담을 신청합니다.")
                 self.parent.client_socket.sendall(invite_msg.encode())
         else: QMessageBox.information(self, '초대', '상담중에는 다른사람을 초대 할 수 없습니다.')
+    # 메시지박스 메서드
     def show_message_slot(self, message):
         title = self.parent.signal[0]
         if message == "입력하신 정보가 맞지 않습니다.":
@@ -449,6 +489,7 @@ class Contents(QWidget, contents_form_class):
         else:
             title = message[0:2]
         QMessageBox.information(self, title, message)
+    # 메시지 전송 서버요청 메서드
     def send_chat(self):
         # information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         time = self.lb_time.text()
@@ -457,16 +498,15 @@ class Contents(QWidget, contents_form_class):
         message = json.dumps(information)
         self.parent.client_socket.sendall(message.encode())
         self.le_message.clear()
-
+    # 메시지를 보내거나 받았을 경우 업데이트 시켜주는 메서드
     def chat_update(self):
         if self.consulting:
             chat_message = f"{self.parent.signal[1]} : {self.parent.signal[3]}"
             self.lw_chat.addItem(self.parent.signal[4])
             self.lw_chat.addItem(chat_message)
+    # 상담종료 메서드
     def consult_end(self):
-        print(self.consulting)
         if self.consulting:
-            print('asdsdasdasadsadasdsadsadasd')
             self.lw_chat.clear()
             self.btn_consult_end.hide()
             self.consulting = False
@@ -474,6 +514,7 @@ class Contents(QWidget, contents_form_class):
             consult_end_temp = ['상담종료', self.login_user[3], self.chat_partner]
             consult_end_msg = json.dumps(consult_end_temp)
             self.parent.client_socket.sendall(consult_end_msg.encode())
+    # 초대를 받았을 경우 실행되는 메서드
 
     def recv_invite(self): # signal = ["채팅초대", 보낸사람, 받는사람, 보낸사람 소켓]
         if not self.consulting:
@@ -484,6 +525,7 @@ class Contents(QWidget, contents_form_class):
             invite_temp = ['이미 채팅중', f"{self.login_user[3]}님은\n이미 상담중입니다.", self.login_user[3], self.invite_sender]
             invite_already_msg = json.dumps(invite_temp)
             self.parent.client_socket.sendall(invite_already_msg.encode())
+    # 초대수락 메서드
     def invite_OK(self):
         self.stw_contents.setCurrentIndex(4) # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
         invite_OK_temp= ['채팅수락', f"{self.lb_time.text()}\n대화가 시작됩니다.", self.login_user[3],self.invite_sender]
@@ -491,9 +533,10 @@ class Contents(QWidget, contents_form_class):
         self.parent.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
         self.consulting = True
+    # 초대 거절 메서드
     def invite_No(self):
         self.gb_invite.hide()
-class Student:
+class Student: # 서버와 연동되는 클래스
     def __init__(self):
         ip = '127.0.0.1'
         port = 9048
@@ -501,6 +544,7 @@ class Student:
         self.listen_thread()
         self.contents = Contents(self)
         self.contents.show()
+
     def initialize_socket(self, ip, port):
         """
         클라이언트 소켓을 열고 서버 소켓과 연결해준다.

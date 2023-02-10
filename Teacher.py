@@ -16,16 +16,17 @@ import xmltodict
 import pandas as pd
 import bs4
 
-
 encoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu%2BGvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg%3D%3D'
 decoding = '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg=='
 form_class = uic.loadUiType('./Teacher.ui')[0]
 
 
+# PyqtSignal
 class MessageSignal(QObject):
     show_message = pyqtSignal(str)
 
 
+# GUI 메인 클래스
 class Main(QMainWindow, form_class):
     Client_socket = None
 
@@ -91,36 +92,50 @@ class Main(QMainWindow, form_class):
         self.background_label.setPixmap(pixmap)
 
     def btn_logout_clicked(self):
+        """
+        로그아웃 버튼 클릭시에 가장 처음화면으로 돌아가고 서버에서 ID리스트 업데이트를 위하여 메세지를 송신한다.
+        """
         self.mainstack.setCurrentIndex(0)
         self.login_stack.setCurrentIndex(0)
-        logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[-1]] # logout_temp = ['로그아웃', ID, 이름, 학생]
+        logout_temp = ['로그아웃', self.login_user[1], self.login_user[3],
+                       self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
         logout_msg = json.dumps(logout_temp)
         self.client_socket.sendall(logout_msg.encode())
         self.logout_bool = True
 
     def call_student_test_result(self):
+        """
+        서버에서 시험결과를 요청한걸 받아서
+        리스트 위젯에서 학생 이름을 선택하면 학생의 성적을 보여준다.
+        """
         self.test_result_groupbox.show()
         # information ["TC시험결과요청",학생번호]
         student_name = self.student_list_lw.currentItem().text()
         for i in self.student_client_list:
-            if student_name == i[3] :
-                student_num= i[0]
+            if student_name == i[3]:
+                student_num = i[0]
                 break
         information = ["TC시험결과요청", student_num]
         message = json.dumps(information)
         self.client_socket.sendall(message.encode())
 
     def consult_end(self):
+        """
+        실시간 상담하는 도중 둘중 한명이 상담종료를 누르게 되면 실행되어 서버에 시그널을 보내고 상대방은 시그널을 받으면 실행된다.
+        """
         if self.consulting:
             self.Consult_chat_lw.clear()
             self.btn_consult_end.hide()
             self.consulting = False
         if self.signal[0] != '상담종료':
-            consult_end_temp = ['상담종료', self.login_user[3], self.chat_partner]
+            consult_end_temp = ['상담종료', self.login_user[3], self.invite_sender]
             consult_end_msg = json.dumps(consult_end_temp)
             self.client_socket.sendall(consult_end_msg.encode())
 
     def time_thread(self):
+        """
+        라벨에 시간을 띄우는 스레드.
+        """
         while True:
             time.sleep(1)
             now = datetime.datetime.now()
@@ -130,6 +145,9 @@ class Main(QMainWindow, form_class):
             self.lb_time.setText(time_str)
 
     def send_chat(self):
+        """
+        서버에서 '실시간채팅' 이라는 시그널을 받앗을시에 실행되는 메서드
+        """
         # information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         time = self.lb_time.text()
         send_message = self.consult_chat_le.text()
@@ -139,7 +157,9 @@ class Main(QMainWindow, form_class):
         self.consult_chat_le.clear()
 
     def invite_student(self):  # ["채팅초대", 보낸사람, 받는사람]
-
+        """
+        학생 초대시에 실행하는 메서드로 이미 상담중인 상태라면 리스트 위젯의 항목을 선택하더라도 초대할수 없다.
+        """
         if self.consulting == False:
             student_name = self.client_list_widget.currentItem().text()
             ans = QMessageBox.question(self, '채팅', f'{student_name}님을 초대하시겠습니까?', QMessageBox.Yes | QMessageBox.No,
@@ -153,6 +173,9 @@ class Main(QMainWindow, form_class):
             QMessageBox.information(self, '초대', '상담중에는 다른 사람을 초대 할 수 없습니다.')
 
     def recv_invite(self):  # signal = ["채팅초대", 보낸사람, 받는사람, 보낸사람 소켓]
+        """
+        채팅 초대를 받았을때 실행되는 메서드로 이미 상담중인 상태라면 서버에 상담중이라고 보내서 초대한 상대방에게 알린다.
+        """
         if self.consulting == False:
             self.lb_invite_message.setText(f"{self.signal[1]}님이 상담을\n신청했습니다.")
             self.invite_sender = self.signal[1]
@@ -163,21 +186,30 @@ class Main(QMainWindow, form_class):
             self.client_socket.sendall(invite_already_msg.encode())
 
     def invite_OK(self):
+        """
+        채팅 초대 수락시에 실행되는 메서드로 서버로 수락했다는 메세지를 보낸다.
+        """
+        self.consulting = True
         self.stackedWidget.setCurrentIndex(4)  # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
         invite_OK_temp = ['채팅수락', f"{self.lb_time.text()}\n대화가 시작됩니다.", self.login_user[3], self.invite_sender]
         invite_accept_msg = json.dumps(invite_OK_temp)
         self.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
         self.btn_consult_end.show()
-        self.consulting = True
 
     def invite_No(self):
+        """
+        초대 거절시 실행되는 메서드
+        """
         self.gb_invite.hide()
         self.consulting = False
 
     def answer_register(self):
+        """
+        QNA 답변 등록시에 실행되는 메서드이다.
+        각 라인이나 위젯에서 항목을 가지고와서 서버로 보내준뒤 서버에서는 DB에 등록해줌.
+        """
         select_question = self.tw_qna_list.selectedItems()
-        print(select_question)
         question_num = select_question[0].text()
         answer = self.QnA_linedit.text()
         answer_user_name = self.login_user[3]
@@ -187,9 +219,11 @@ class Main(QMainWindow, form_class):
         self.QnA_linedit.clear()
         QMessageBox.information(self, "등록", "등록되었습니다")
 
+    # 회원가입 스택으로 이동
     def move_join(self):
         self.login_stack.setCurrentIndex(2)
 
+    # 회원가입 스택에서 로그인 스택으로 이동하면서 GUI 요소들 초기화
     def move_login(self):
         self.le_input_id.clear()
         self.le_input_pw.clear()
@@ -198,12 +232,18 @@ class Main(QMainWindow, form_class):
         self.le_phonenum.clear()
         self.login_stack.setCurrentIndex(0)
 
-    # 회원가입
     def change_id(self):
+        """
+        중복체크 후에 아이디 라인에딧의 상태가 변경되었을대 실행되는 메서드
+        중복체크 이후에 아이디 변경하고 가입을 방지하기 위함.
+        """
         self.use_id = False
         self.btn_check_id.setEnabled(True)
 
     def check_id(self):
+        """
+        서버에 ID 중복확인 요청을 한다.
+        """
         id = self.le_input_id.text()
         self.serviceable = False
         self.use_id = False
@@ -217,6 +257,10 @@ class Main(QMainWindow, form_class):
             self.client_socket.send(message.encode())
 
     def check_sign_up(self):
+        """
+        조건을 만족하여 입력하고 회원가입 누를시에
+        서버로 정보를 보내 서버에서는 DB에 등록시켜준다.
+        """
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
         chk_pw = self.le_check_pw.text()
@@ -239,6 +283,9 @@ class Main(QMainWindow, form_class):
             QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
 
     def sign_up_clear(self):
+        """
+        회원가입 스택 GUI 정보 초기화
+        """
         self.le_input_id.clear()
         self.le_input_pw.clear()
         self.le_check_pw.clear()
@@ -246,13 +293,15 @@ class Main(QMainWindow, form_class):
         self.le_phonenum.clear()
 
     def login_check(self):
+        """
+        로그인시에 서버에 정보를 보내 로그인 체크를 하게 한다.
+        """
         # signal = ["로그인", ID, PW]
         ID = self.le_show_ID.text()
         password = self.le_input_PW.text()
         information = ["로그인", ID, password, '선생']
         message = json.dumps(information)
         self.client_socket.send(message.encode())
-
     def login_move_next(self):
         input_id = self.le_input_ID.text()
         self.le_show_ID.setText(input_id)
@@ -266,13 +315,11 @@ class Main(QMainWindow, form_class):
         self.le_input_ID.clear()
         self.le_input_PW.clear()
 
-
-
-
-
     def on_item_clicked(self, item, column):
+        """
+        트리위젯 클릭시에 이동하여 함수를 실행시켜주는 메서드
+        """
         self.item = item.text(column)
-
         actions = {"점수/통계확인(학생별)": (1, self.request_student_list),
                    "통계확인(문제별)": (2, self.request_test_statistics),
                    "Q&A": (3, self.DB_request_QNA),
@@ -287,6 +334,9 @@ class Main(QMainWindow, form_class):
             if func:
                 func()
     def request_test_statistics(self):
+        """
+        문제 통계 페이지 클릭시 문제 통계를 요청하는 메서드
+        """
         self.test_statistics.clearContents()
         self.test_statistics_2.clearContents()
         information = ["TC문제통계요청"]
@@ -294,12 +344,18 @@ class Main(QMainWindow, form_class):
         self.client_socket.send(message.encode())  # 서버에 정보 전달
 
     def request_student_list(self):
+        """
+        학생별 문제풀이페이지 클릭시 서버에 정보를 요청하는 메서드
+        """
         self.student_list_lw.clear()
         information = ["TC학생DB요청"]
         message = json.dumps(information)  # 제이슨 변환
         self.client_socket.send(message.encode())  # 서버에 정보 전달
 
     def entry_test(self):
+        """
+        문제업데이트 페이지에서 등록버튼을 누를시 GUI의 정보를 DB로 전달하여 문제를 등록한다.
+        """
         if self.item == '':
             self.item = '포유류'
         test_contents = self.test_contents.text()  # 문제 내용
@@ -321,13 +377,20 @@ class Main(QMainWindow, form_class):
         self.textBrowser.clear()
         self.test_contents.setText("문제 내용을 입력해주세요")
 
+
     def chat_update(self):
+        """
+        '실시간 채팅' 신호를 받앗을시 실행되는 메서드로 상담 채팅창에 내용을 업데이트 해준다.
+        """
         if self.consulting:
             chat_message = f"{self.signal[1]} : {self.signal[3]}"
             self.Consult_chat_lw.addItem(self.signal[4])
             self.Consult_chat_lw.addItem(chat_message)
 
     def show_qna(self):
+        """
+        QNA 목록을 선택하면 저장된 qna_list에서 이를 찾아 내용을 표시해준다.
+        """
         select_question = self.tw_qna_list.selectedItems()
         print(select_question)
         question_num = select_question[0].text()
@@ -341,7 +404,9 @@ class Main(QMainWindow, form_class):
                 break
 
     def QNA_list_update(self):
-        print('메서드 진입')
+        """
+        QnA 리스트정보를 서버에서 받아 이를 테이블 위젯에 나타낸다.
+        """
         self.qna_list = self.signal[1:]
         self.tw_qna_list.setRowCount(len(self.qna_list))
         for i in range(len(self.qna_list)):
@@ -349,12 +414,13 @@ class Main(QMainWindow, form_class):
                 self.tw_qna_list.setItem(i, j, QTableWidgetItem(str(self.qna_list[i][j])))
 
     def DB_request_QNA(self):
+        """
+        QNA 목록을 서버에 요청한다.
+        """
         # self.login_user = [1, 'ksi', '1234', '김성일', 0, '4', '학생']
         QNA_temp = ['SCDB요청 Q&A', self.login_user[1], self.login_user[3], self.login_user[-1]]
         QNA_msg = json.dumps(QNA_temp)
         self.client_socket.sendall(QNA_msg.encode())
-        print(QNA_temp, '보냄')
-
 
 
     def receive_message(self, socket):
@@ -366,10 +432,9 @@ class Main(QMainWindow, form_class):
             try:
                 incoming_message = socket.recv(8192)
                 self.signal = json.loads(incoming_message.decode())
-                print(self.signal)
+
             except Exception as e:
                 print(e)
-                print("오류남")
                 break
             else:
                 if self.signal[0] == "DB검색반환":  # signal = ["DB검색반환",1,2,3,4 ....]
@@ -408,25 +473,30 @@ class Main(QMainWindow, form_class):
                     self.recv_invite()
                 elif self.signal[0] == "채팅수락":  # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.Consult_chat_lw.addItem(self.signal[1])
-                    if self.signal[2] == self.login_user[3] :
+                    self.consulting = True
+                    if self.signal[2] == self.login_user[3]:
                         self.invite_sender = self.signal[3]
-                    else :
+                    else:
                         self.invite_sender = self.signal[2]
                     self.btn_consult_end.show()
-                    self.consulting = True
+
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
                     self.chat_update()
                 elif self.signal[0] == "이미 채팅중":  # signal= ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]
                     self.message_signal.show_message.emit("이미 상담중입니다")
                 elif self.signal[0] == "학생성적반환":
-            # information = ["학생성적반환",correct_test_question_num,Total_test_question_num,insect_correct_question_num,
-            # insect_question_num,mammal_correct_question_num,mammal_question_num,bird_correct_question_num,bird_question_num]
+                    # information = ["학생성적반환",correct_test_question_num,Total_test_question_num,insect_correct_question_num,
+                    # insect_question_num,mammal_correct_question_num,mammal_question_num,bird_correct_question_num,bird_question_num]
                     self.call_student_test_record()
-                elif self.signal[0] == "TC문제통계반환" : # signal = ["TC문제통계반환" , 리스트1(정답률) , 리스트2(소요시간)]
+                elif self.signal[0] == "TC문제통계반환":  # signal = ["TC문제통계반환" , 리스트1(정답률) , 리스트2(소요시간)]
                     self.update_test_statistics()
-                elif self.signal[0] == "상담종료": # signal = ["상담종료"]
+                elif self.signal[0] == "상담종료":  # signal = ["상담종료"]
                     self.consult_end()
+
     def update_test_statistics(self):
+        """
+        정답률이 낮은 5개의 문제들과  소요시간이 오래걸린 5개의 문제들을 서버에서 받아 페이지에 업데이트시켜준다.
+        """
         rate_list = self.signal[1]
         time_list = self.signal[2]
         self.test_statistics.clearContents()
@@ -452,6 +522,11 @@ class Main(QMainWindow, form_class):
             self.test_statistics_2.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
 
     def call_student_test_record(self):
+        """
+        학생들의 문제를 풀었던 현황들을 가지고 와서 정답률을 나타내준다.
+        가장 정답률이 낮은 과목이 부족한 과목임.
+        ZeroDivisionError가 나는 경우를 대비해서 Try Except 구문 활용함.
+        """
         self.test_record = self.signal[1:]
         print(self.test_record)
         self.correct_lbl.setText(str(self.test_record[0]))
@@ -462,39 +537,44 @@ class Main(QMainWindow, form_class):
         self.mammal_all_lbl.setText(str(self.test_record[5]))
         self.bird_correct_lbl.setText(str(self.test_record[6]))
         self.bird_all_lbl.setText(str(self.test_record[7]))
-        try :
-            a = round(self.test_record[0]/self.test_record[1]*100,3)
+        try:
+            a = round(self.test_record[0] / self.test_record[1] * 100, 3)
             print(a)
-            self.correct_rate_lbl.setText(str(a)+'%')
-        except ZeroDivisionError :
+            self.correct_rate_lbl.setText(str(a) + '%')
+        except ZeroDivisionError:
             self.correct_rate_lbl.setText('')
-        try :
-            a = round(self.test_record[2]/self.test_record[3]*100,3)
+        try:
+            a = round(self.test_record[2] / self.test_record[3] * 100, 3)
             print(a)
-            self.insect_correct_rate_lbl.setText(str(a)+'%')
-        except ZeroDivisionError :
+            self.insect_correct_rate_lbl.setText(str(a) + '%')
+        except ZeroDivisionError:
             self.insect_correct_rate_lbl.setText('')
-        try :
-            a = round(self.test_record[4]/self.test_record[5]*100,3)
+        try:
+            a = round(self.test_record[4] / self.test_record[5] * 100, 3)
             print(a)
-            self.mammal_correct_rate_lbl.setText(str(a)+'%')
-        except ZeroDivisionError :
+            self.mammal_correct_rate_lbl.setText(str(a) + '%')
+        except ZeroDivisionError:
             self.mammal_correct_rate_lbl.setText('')
-        try :
-            a = round(self.test_record[6]/self.test_record[7]*100,3)
+        try:
+            a = round(self.test_record[6] / self.test_record[7] * 100, 3)
             print(a)
-            self.bird_correct_rate_lbl.setText(str(a)+'%')
-        except ZeroDivisionError :
+            self.bird_correct_rate_lbl.setText(str(a) + '%')
+        except ZeroDivisionError:
             self.bird_correct_rate_lbl.setText('')
 
-
     def student_list_update(self):
+        """
+        서버에서 학생 목록을 받아서 점수 통계확인(학생별) 페이지의 학생 목록을 업데이트해준다.
+        """
         self.student_client_list = self.signal[1:]
         print(self.student_client_list)
         for i in self.student_client_list:
             self.student_list_lw.addItem(i[3])
 
     def show_message_slot(self, message):
+        """
+        pyqt signal (message) 에 대한 slot
+        """
         QMessageBox.information(self, "정보", message)
 
     def move_main(self):
@@ -505,6 +585,9 @@ class Main(QMainWindow, form_class):
         self.user_name_label.setText(f"{self.signal[4]}님 안녕하세요")
 
     def update_description_db(self):
+        """
+        API를 불러오지 못했을떄를 대비하여 서버에서 DB받아오기. 설명  업데이트함.
+        """
         self.signal.pop(0)
         self.img_URL = self.signal[2]
         self.textBrowser.append(self.signal[0])
@@ -512,12 +595,19 @@ class Main(QMainWindow, form_class):
         self.textBrowser.append(self.signal[1])
 
     def update_test_item_widget_db(self):
+        """
+        API를 불러오지 못햇을때를 대비해 서버에서 DB를 받아온다. 목록 업데이트함.
+        """
         self.test_item_list_widget.clear()
         self.signal.pop(0)
         for i in self.signal:
             self.test_item_list_widget.addItem(i)
 
     def search_test_items(self):
+        """
+        문제 업데이트 목록 검색시에 API에서 찾아주는 메서드
+        오류시에는 DB에서 불러오도록 Try-except 사용함.
+        """
         self.test_item_list_widget.clear()
         self.searchitem = self.test_update_search_LE.text()
         try:  # API 오류 날때를 대비해서 오류시 서버에 DB 요청
@@ -536,6 +626,7 @@ class Main(QMainWindow, form_class):
             message = json.dumps(information)
             self.clear_test_update()
             self.client_socket.send(message.encode())
+
     def initialize_socket(self, ip, port):
         """
         클라이언트 소켓을 열고 서버 소켓과 연결해준다.
@@ -545,17 +636,6 @@ class Main(QMainWindow, form_class):
         remote_port = port
         self.client_socket.connect((remote_ip, remote_port))
 
-    def send_chat_gt(self):
-        """
-        끝말잇기 게임 대기방에서의 채팅을 보내주는 메서드
-        """
-        senders_name = self.id
-        data = self.game_lineEdit.text()
-        message = (senders_name + ': ' + data + '123456').encode('utf-8')
-        self.client_socket.send(message)
-        self.game_lineEdit.clear()
-        return 'break'
-
     def listen_thread(self):
         """
         서버에서의 신호를 수신받는 스레드 시작
@@ -563,11 +643,13 @@ class Main(QMainWindow, form_class):
         t = Thread(target=self.receive_message, args=(self.client_socket,))
         t.daemon = True
         t.start()
+
     def search_test_items_mammal(self):
+        """API를 불러와서 검색목록을 업데이트 해준다."""
         url = 'http://apis.data.go.kr/1400119/MammService/mammIlstrSearch'
         params = {
             'serviceKey': '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg==',
-            'st': '1', 'sw': self.searchitem, 'numOfRows': '20', 'pageNo': '1'}
+            'st': '1', 'sw': self.searchitem, 'numOfRows': '30', 'pageNo': '1'}
         response = requests.get(url, params=params)
         # xml 내용
         content = response.text
@@ -607,7 +689,7 @@ class Main(QMainWindow, form_class):
         url = 'http://apis.data.go.kr/1400119/BirdService/birdIlstrSearch'
         params = {
             'serviceKey': '11xBqPRCrKxDRnzolBiWVGwhexbmYELfieu+GvVw7z2HYGWD67SB2EGIMJHoG8KYEvkNOd3LaHsvIp7cDZPhzg==',
-            'st': '1', 'sw': '', 'numOfRows': '10', 'pageNo': '1'}
+            'st': '1', 'sw': self.searchitem, 'numOfRows': '10', 'pageNo': '1'}
         response = requests.get(url, params=params)
         # xml 내용
         content = response.text
@@ -683,6 +765,9 @@ class Main(QMainWindow, form_class):
             self.test_item_list_widget.addItem(self.df.iloc[i]['insctofnmkrlngnm'])
 
     def test_items_description(self):
+        """
+        목록에서 각 항목을 선택시에 이에 대한 설명을 업데이트할수 잇도록 메서드를 불러옴.
+        """
         self.textBrowser.clear()
         if self.item == '포유류':
             try:
@@ -703,6 +788,9 @@ class Main(QMainWindow, form_class):
                 self.test_items_description_db()
 
     def test_items_description_mammal(self):
+        """
+        목록에서 선택한 항목에 대하여 TextBrowser에 업데이트한다.
+        """
         self.textBrowser.clear()
         temp = self.test_item_list_widget.currentRow()
         q1 = self.df.iloc[temp]['anmlSpecsId']
@@ -764,18 +852,23 @@ class Main(QMainWindow, form_class):
         information = ["DB설명요청", self.item, selected_item]
         message = json.dumps(information)
         self.client_socket.send(message.encode())
+
     def closeEvent(self, QCloseEvent):
+        """
+        종료시에 신호를 서버로 보내서 서버 접속목록을 갱신시켜줌.
+        """
         ans = QMessageBox.question(self, "종료 확인", "종료 하시겠습니까?",
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ans == QMessageBox.Yes:
-            # if not self.logout_bool:
-            #     logout_temp = ['로그아웃', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
-            #     logout_msg = json.dumps(logout_temp)
-            #     self.client_socket.sendall(logout_msg.encode())
-            if self.login_user :
+            if not self.logout_bool:
+                logout_temp = ['로그아웃', self.login_user[1], self.login_user[3],
+                               self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
+                logout_msg = json.dumps(logout_temp)
+                self.client_socket.sendall(logout_msg.encode())
+            if self.login_user:
                 close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[-1]]
-            else :
-                close_temp = ["종료",'-','-','-']
+            else:
+                close_temp = ["종료", '-', '-', '-']
             close_msg = json.dumps(close_temp)
             print('어디까지')
             self.client_socket.sendall(close_msg.encode())
@@ -783,6 +876,7 @@ class Main(QMainWindow, form_class):
         else:
             print('취소')
             QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
+
 
 if __name__ == "__main__":
     ip = '127.0.0.1'
