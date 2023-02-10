@@ -45,6 +45,13 @@ class Contents(QWidget, contents_form_class):
         self.btn_join2.clicked.connect(self.move_join)
         self.le_input_PW.returnPressed.connect(self.login_msg_send)
         self.btn_move_main.clicked.connect(self.login_msg_send)
+        self.btn_check_id.clicked.connect(self.check_id)
+        self.le_input_id.returnPressed.connect(self.check_id)
+        self.le_input_id.textChanged.connect(self.change_id)
+        self.btn_join_finish.clicked.connect(self.check_sign_up)
+        self.btn_cancle.clicked.connect(self.move_login)
+        self.btn_join.clicked.connect(self.move_join)
+        self.btn_join2.clicked.connect(self.move_join)
         # Q&A
         self.tw_qna_list.cellDoubleClicked.connect(self.show_qna)
         self.btn_question_finish.clicked.connect(self.question_Completed)
@@ -72,6 +79,12 @@ class Contents(QWidget, contents_form_class):
         self.btn_answer_X.clicked.connect(lambda: self.test_submit('X'))
         # 학습
         self.btn_learning_finish_.clicked.connect(self.learning_completed)
+        # 배경
+        pixmap = QPixmap("bg.jpg")
+        pixmap = pixmap.scaled(self.background_label.width(), self.background_label.height(), Qt.KeepAspectRatio,
+                                       Qt.SmoothTransformation)
+        self.background_label.setPixmap(pixmap)
+        # self.background_label.move(,100)
     def learning_completed(self): # completed_temp = ['학습완료', 1, '산굴뚝나비', '1산굴뚝나비']
         item = self.lw_learning_list_.currentItem().text()
         uniq_key = str(self.login_user[0]) + item
@@ -147,57 +160,39 @@ class Contents(QWidget, contents_form_class):
         self.use_id = False
         self.btn_check_id.setEnabled(True)
     def check_id(self):
+        print('체크아이디')
         id = self.le_input_id.text()
-        self.serviceable = False
         self.use_id = False
         if len(id) < 3:
             self.le_input_id.clear()
             QMessageBox.information(self, "ID", "ID가 너무 짧습니다.\n3자 이상으로 입력해주세요")
         else:
-            # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-            #                        charset='utf8')
-            conn = pymysql.connect(host='192.168.219.109', port=3306, user='root', password='00000000',
-                                  db='education_app',
-                                  charset='utf8')
-            cursor = conn.cursor()
-            cursor.execute(f"select ID from memberinfo where ID='{id}'")
-            a = cursor.fetchone()
-            print(a)
-            conn.close()
-            if a == None:
-                self.use_id = True
-                QMessageBox.information(self, 'ID', '사용가능한 ID 입니다.')
-                self.btn_check_id.setEnabled(False)
-            else:
-                QMessageBox.critical(self, "ID", "이미 사용중인 ID 입니다.")
+            print('saddsa')
+            # DB 요청
+            information = ["ID중복확인", id]
+            message = json.dumps(information)
+            self.parent.client_socket.send(message.encode())
     def check_sign_up(self):
-        # conn = pymysql.connect(host='10.10.21.103', port=3306, user='root', password='00000000', db='education_app',
-        #                        charset='utf8')
-        conn = pymysql.connect(host='192.168.219.109', port=3306, user='root', password='00000000', db='education_app',
-                              charset='utf8')
-        cursor = conn.cursor()
         id = self.le_input_id.text()
         pw = self.le_input_pw.text()
         chk_pw = self.le_check_pw.text()
         name = self.le_input_name.text()
         phonenum = self.le_phonenum.text()
-        self.join=[id, pw, chk_pw, name, phonenum]
-        what_NULL=['ID','PW','이름','휴대폰번호']
+        self.join = [id, pw, chk_pw, name, phonenum]
+        what_NULL = ['ID', 'PW', '이름', '휴대폰번호']
         print(self.join)
         for line_edit in self.join:
-            if line_edit =="":
+            if line_edit == "":
                 NULL_index = self.join.index(line_edit)
                 QMessageBox.information(self, "NULL", f"{what_NULL[NULL_index]}를 입력해주세요.")
                 return
         if self.use_id:
             if self.join[1] == self.join[2]:
-                cursor.execute(f"insert into memberinfo (ID,Password,User_Name,Division) values('{self.join[0]}','{self.join[1]}','{self.join[3]}','학생')")
-                conn.commit()
-                conn.close()
-                QMessageBox.information(self, "ID", "회원가입이 완료되었습니다.", QMessageBox.Ok)
-                self.stw_login_join.setCurrentIndex(0)
-                self.sign_up_clear()
-        else: QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
+                information = ["회원가입", id, pw, name, '학생']
+                message = json.dumps(information)
+                self.parent.client_socket.send(message.encode())
+        else:
+            QMessageBox.information(self, 'ID', 'ID 중복확인을 해주세요.')
     def sign_up_clear(self):
         self.le_input_id.clear()
         self.le_input_pw.clear()
@@ -206,10 +201,11 @@ class Contents(QWidget, contents_form_class):
         self.le_phonenum.clear()
     def setup_label(self):
         print('!!!!!',self.login_user)
+        rank = 5 - (self.login_user[4]//3000)
         self.lb_check_name.setText(f'{self.login_user[3]}님 안녕하세요.')
         self.lb_user_name_.setText(self.login_user[3])
         self.lb_point_num.setText(str(self.login_user[4]))
-        self.lb_rank_num.setText(self.login_user[5])
+        self.lb_rank_num.setText(str(rank))
         self.lb_question_num.setText(str(self.login_user[7][0]))
         self.lb_learning_num.setText(str(self.login_user[7][1]))
         td_time = Thread(target=self.time_thread, daemon=True)  # 시간쓰레드
@@ -418,12 +414,9 @@ class Contents(QWidget, contents_form_class):
         self.lw_online_student_.clear()
         online_student = signal[1]
         online_teacher = signal[2]
-        print('왜 안나오고 지랄임?',online_student)
         for i in online_student: # 테스트용
-            print('이거나와라',i[1])
             self.lw_online_student_.addItem(i[1])
         for i in online_teacher:
-            print('@@@나와라',i[1])
             self.lw_online_teacher_.addItem(i[1])
         print('온라인유저 목록 업데이트')
     def QNA_list_update(self):
@@ -449,6 +442,8 @@ class Contents(QWidget, contents_form_class):
             self.le_input_ID.clear()
             self.le_input_PW.clear()
             self.stw_login_join.setCurrentIndex(0)
+        elif message == '사용가능한 ID 입니다.':
+            title = '회원가입'
         elif '이미 상담중입니다' in message:
             title = '상담중'
         else:
@@ -458,19 +453,28 @@ class Contents(QWidget, contents_form_class):
         # information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         time = self.lb_time.text()
         send_message = self.le_message.text()
-        information = ["실시간채팅", self.login_user[3], self.parent.signal[2], send_message, time]
+        information = ["실시간채팅", self.login_user[3], self.chat_partner, send_message, time]
         message = json.dumps(information)
         self.parent.client_socket.sendall(message.encode())
         self.le_message.clear()
+
     def chat_update(self):
         if self.consulting:
             chat_message = f"{self.parent.signal[1]} : {self.parent.signal[3]}"
             self.lw_chat.addItem(self.parent.signal[4])
             self.lw_chat.addItem(chat_message)
     def consult_end(self):
-        self.lw_chat.clear()
-        self.btn_consult_end.hide()
-        self.consulting = False
+        print(self.consulting)
+        if self.consulting:
+            print('asdsdasdasadsadasdsadsadasd')
+            self.lw_chat.clear()
+            self.btn_consult_end.hide()
+            self.consulting = False
+        if self.parent.signal[0] != '상담종료':
+            consult_end_temp = ['상담종료', self.login_user[3], self.chat_partner]
+            consult_end_msg = json.dumps(consult_end_temp)
+            self.parent.client_socket.sendall(consult_end_msg.encode())
+
     def recv_invite(self): # signal = ["채팅초대", 보낸사람, 받는사람, 보낸사람 소켓]
         if not self.consulting:
             self.lb_invite_message.setText(f"{self.parent.signal[1]}님이 상담을\n신청했습니다.")
@@ -486,6 +490,7 @@ class Contents(QWidget, contents_form_class):
         invite_accept_msg = json.dumps(invite_OK_temp)
         self.parent.client_socket.sendall(invite_accept_msg.encode())
         self.gb_invite.hide()
+        self.consulting = True
     def invite_No(self):
         self.gb_invite.hide()
 class Student:
@@ -531,6 +536,16 @@ class Student:
                     self.contents.online_user_update(self.signal)
                 elif self.signal[0] == "로그아웃":
                     self.contents.online_user_update(self.signal)
+                elif self.signal[0] == "중복 없음":
+                    self.contents.message_signal.show_message.emit("사용가능한 ID 입니다.")
+                    self.contents.use_id = True
+                    self.contents.btn_check_id.setEnabled(False)
+                elif self.signal[0] == "ID 중복":
+                    self.contents.message_signal.show_message.emit("이미 사용중인 ID 입니다.")
+                elif self.signal[0] == "가입 완료":
+                    self.contents.message_signal.show_message.emit("회원가입이 완료되었습니다")
+                    self.contents.stw_login_join.setCurrentIndex(0)
+                    self.contents.sign_up_clear()
                 elif self.signal[0] == "DB설명반환":  # signal = ["DB설명반환",생태,일반,이미지]
                     print("DB설명반환 메세지 받음")
                 elif self.signal[0] == 'SC Q&A DB반환':
@@ -539,10 +554,16 @@ class Student:
                 elif self.signal[0] == "채팅초대":  #signal = ["채팅초대", 보낸사람, 받는사람]
                     self.contents.recv_invite()
                     print(f"{self.signal[1]}님의 채팅초대")
-                elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+                elif self.signal[0] == "채팅수락":  # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.contents.lw_chat.addItem(self.signal[1])
+                    if self.signal[2] == self.contents.login_user[3]:
+                        self.contents.chat_partner = self.signal[3]
+                    else:
+                        self.contents.chat_partner = self.signal[2]
                     self.contents.consulting = True
                     self.contents.btn_consult_end.show()
+                elif self.signal[0] == "상담종료": # signal = ["상담종료"]
+                    self.contents.consult_end()
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
                     self.contents.chat_update()
                 elif self.signal[0] == "이미 채팅중":  # signal= ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]

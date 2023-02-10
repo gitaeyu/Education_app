@@ -120,6 +120,9 @@ class TeacherClass:
         self.parent = parent
 
     def reqeuest_student_test_result(self,socket):
+        """
+        학생들의 여태까지 푼 문제들의 개수 및 정답 맞춘 개수를 가지고옴.
+        """
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
         with con:
@@ -153,6 +156,9 @@ class TeacherClass:
                 message = json.dumps(information)
                 socket.sendall(message.encode())
     def request_student_DB(self,socket):
+        """
+        학생들의 목록을 DB에서 불러와 선생클라이언트로 반환하는 메서드
+        """
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
         sql = f"SELECT * FROM `memberinfo` WHERE division='학생'"
@@ -167,7 +173,9 @@ class TeacherClass:
                 socket.sendall(request_db_msg.encode())
                 print('학생DB 전송완료')
     def entry_answer(self):
-        print("답변등록")
+        """
+        Q&A 테이블의 답변 정보를 받아와서 DB에 업데이트 시킨다.
+        """
         # self.parent.signal = ["답변등록" ,문제번호 ,답변,답변자]
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
@@ -177,13 +185,13 @@ class TeacherClass:
                         where Num = {int(self.parent.signal[1])} "
                 cur.execute(sql)
                 con.commit()
-        print("답변등록 완료")
 
     def testentry(self):
+        """
+        클라이언트에서 문제등록 정보를 받아 문제를 DB에 등록하는 메서드
+        """
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
-        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-        #                        charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"INSERT INTO test (Test_contents,Test_img_URL,Test_correct_answer,Test_subject,\
@@ -193,57 +201,51 @@ class TeacherClass:
                 con.commit()
 
     def request_db_name_list(self,socket):
+        """
+        학습자료 검색시 이름 목록을 돌려주는 메서드 API가 오류낫을대를 대비하였다.
+        """
         # signal = ["DB검색요청", 종류, 검색어]
-        print(self.parent.signal)
-        # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
-        #                       db='education_app', charset='utf8')
-        con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-                               charset='utf8')
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT 이름 from 학습자료 where 분류 = '{self.parent.signal[1]}' \
                 and 이름 like '%{self.parent.signal[2]}%'"
-                print(sql)
                 cur.execute(sql)
                 name_list = cur.fetchall()
-                print(name_list)
                 information = ["DB검색반환"]
                 for x in name_list:
                     information.append(x[0])
-                print(information)
                 message = json.dumps(information)
                 socket.sendall(message.encode())
-                print("ㅎㅇ")
+
     def request_db_description(self,socket):
+        """
+        API 오류를 대비해 DB에서 학습자료 설명을 가지고 온다.
+        """
         # signal = ["DB설명요청", 종류, 검색어]
-        print(self.parent.signal)
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
-        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-        #                        charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = f"SELECT 생태특징,일반특징,이미지 from 학습자료 where 분류 = '{self.parent.signal[1]}' \
                 and 이름 = '{self.parent.signal[2]}'"
-                print(sql)
                 cur.execute(sql)
                 info_list = cur.fetchall()
-                print(info_list)
                 information = ["DB설명반환"]
                 information.append(info_list[0][0])
                 information.append(info_list[0][1])
                 information.append(info_list[0][2])
-                print(information)
                 message = json.dumps(information)
                 socket.sendall(message.encode())
 
     def request_test_stat(self, socket):
+        """
+        문제통계 요청에 따라 DB에서 값을 가지고와서 클라이언트로 보내준다.
+        """
         # signal = ["TC문제통계요청"]
-        print(self.parent.signal)
         con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
-        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
-        #                        charset='utf8')
         with con:
             with con.cursor() as cur:
                 sql = "select *,CAST(ROUND((f.correct/f.cnt),3) AS cHAR(30)) as rate from \
@@ -252,13 +254,11 @@ class TeacherClass:
                 group by a.test_num) as f order by rate  limit 5"
                 cur.execute(sql)
                 rate_list = cur.fetchall()
-                print(rate_list)
                 sql = "select a.test_num,round(avg(a.consume_time),2) as consume_time , b.test_contents \
                 from member_test as a left join test as b on a.test_num = B.test_num  group by a.test_num \
                 order by consume_time  desc limit 5;"
                 cur.execute(sql)
                 time_list = cur.fetchall()
-                print(time_list)
                 information = ["TC문제통계반환",rate_list,time_list]
                 message = json.dumps(information)
                 socket.sendall(message.encode())
@@ -280,6 +280,9 @@ class MultiChatServer:
 
 
     def user_logout(self): # signal = ["로그아웃", ID, 이름, 학생/교사]
+        """
+        유저 로그아웃시에 시그널을 받아 학생리스트 선생리스트에서 지워주고 이를 다시 모든 클라이언트에게 보내준다.
+        """
         logout_user = self.signal[1::]
         if logout_user[-1] == '학생':
             self.student_list.remove(logout_user)
@@ -290,6 +293,9 @@ class MultiChatServer:
         self.send_message = json.dumps(temp_msg)
         self.send_all_client()
     def new_login_user(self, socket):  # signal = ['로그인',ID, pw, 학생/교사]
+        """
+        유저 로그인시에 신호를 login_check 메서드를 사용하여 실패인지 성공에 따라 메세지를 보내준다.
+        """
         result = self.login_check()
         if result == "성공":
             if socket not in self.clients:
@@ -325,6 +331,10 @@ class MultiChatServer:
             socket.send(message.encode())
 
     def login_check(self):# signal = ["로그인", ID, pw, 학생/교사]
+        """
+        DB를 통해 ID pw 를 대조하여 정보를 전달.
+        :return:
+        """
         id = self.signal[1]
         pw = self.signal[2]
         div = self.signal[3]
@@ -345,6 +355,9 @@ class MultiChatServer:
         else:
             return "성공"
     def login_id_duplicate_check(self, socket):
+        """
+        DB에서 회원가입 ID 중복체크를하고 결과를 다시 소켓클라이언트로 보내주는 메서드
+        """
         id = self.signal[1]
         conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
@@ -364,6 +377,9 @@ class MultiChatServer:
             socket.send(message.encode())
 
     def sign_up(self, socket):
+        """
+        회원가입 등록정보를 DB에 저장하는 메서드 그리고 다시 메세지를 보내 등록완료되었다고 나타나게 해줌
+        """
         # signal = ["회원가입", id,pw,name,'선생']
         conn = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
                               db='education_app', charset='utf8')
@@ -380,6 +396,9 @@ class MultiChatServer:
         socket.send(message.encode())
 
     def real_time_chat(self):  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
+        """
+        실시간 채팅을 하는 사람들을 for문을 돌려 찾아서 그 사람에게만 메세지를 발송한다.
+        """
         chat_msg = json.dumps(self.signal)
         count = 0
         i=0
@@ -391,8 +410,24 @@ class MultiChatServer:
             if count ==2 :
                 break
             i += 1
+    def consult_end(self):    # signal = ["상담종료", 보낸사람, 받는사람]
+        """
+        상담 종료시에 그 대상들에게 상담 종료 메세지를 보낸다.
+        :return:
+        """
+        chat_end_temp = [self.signal[0]]
+        chat_end_msg = json.dumps(chat_end_temp)
+        i = 0
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[2]:
+                socket = self.clients[i]
+                socket.sendall(chat_end_msg.encode())
+            i+=1
 
     def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
+        """
+        채팅 초대를 보낼시에 받는사람에게 메세지를 보내준다.
+        """
         i = 0
         invite_msg = json.dumps(self.signal)
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
@@ -401,7 +436,9 @@ class MultiChatServer:
                 socket.sendall(invite_msg.encode())
             i += 1
     def invite_accept(self,socket): # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
-
+        """
+        상담 초대 수락시에 상대방에게 메세지를 보내준다.
+        """
         i = 0
         invite_msg = json.dumps(self.signal)
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
@@ -411,6 +448,9 @@ class MultiChatServer:
                 socket.sendall(invite_msg.encode())
             i += 1
     def invite_already(self):  # signal= ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]
+        """
+        이미채팅중이라는 메세지를 받게되면 그 상대방에게 다시 메세지를 전달해 알려준다.
+        """
         i = 0
         invite_already_msg = json.dumps(self.signal)
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
@@ -462,8 +502,9 @@ class MultiChatServer:
                 elif self.signal[0] == "종료":   # signal = ["종료", ID, 이름, 학생/교사]
                     self.remove_socket(socket)
                 elif self.signal[0] == "실시간채팅" :  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
-                    print(self.signal)
                     self.real_time_chat()
+                elif self.signal[0] == "상담종료" :    # signal = ["상담종료", 보낸사람, 받는사람]
+                    self.consult_end()
                 elif self.signal[0] == "TC답변등록" : # signal = ["TC답변등록 ,문제번호 ,답변,답변자]
                     self.teacher.entry_answer()
                 elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
@@ -486,20 +527,11 @@ class MultiChatServer:
                     self.student.request_learning_completed()
                 elif self.signal[0] == "TC문제통계요청":  # signal= ["TC문제통계요청"]
                     self.teacher.request_test_stat(socket)
-                elif self.signal[0] == "상담종료":  # signal = ["상담종료", 보낸사람, 받는사람]
-                    self.consult_end()
-
-    def consult_end(self):    # signal = ["상담종료", 보낸사람, 받는사람]
-        chat_end_temp = [self.signal[0]]
-        chat_end_msg = json.dumps(chat_end_temp)
-        i = 0
-        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
-            if id[1] == self.signal[2]:
-                socket = self.clients[i]
-                socket.sendall(chat_end_msg.encode())
-            i+=1
 
     def send_all_client(self):
+        """
+        클라이언트 목록에있는 모든 소켓에 대하여 메세지를 전송해준다.
+        """
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
             socket = client
             try:
