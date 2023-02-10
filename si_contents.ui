@@ -699,101 +699,275 @@ border-radius:10px;
       </rect>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_26">
-      <widget class="QLabel" name="lb_point_">
+      <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
         <rect>
-         <x>310</x>
-         <y>320</y>
-         <width>91</width>
-         <height>91</height>
+         <x>100</x>
+         <y>20</y>
+         <width>651</width>
+         <height>331</height>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(255, 238, 152);
+        <string notr="true"/>
+       </property>
+       <property name="title">
+        <string>학생 정보</string>
+       </property>
+       <widget class="QLabel" name="lb_user_name_">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>30</y>
+          <width>211</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>36</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>이름</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_24">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>120</y>
+          <width>41</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>문제</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lb_question_num">
+        <property name="geometry">
+         <rect>
+          <x>132</x>
+          <y>150</y>
+          <width>91</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>맑은 고딕</family>
+          <pointsize>32</pointsize>
+          <weight>9</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">/*background-color: rgb(255, 238, 152);*/
+background-color: rgb(85, 85, 255);
 border-radius:45px;
 /*border: 1px solid rgb(255, 255, 0);*/
 /*border: 10px solid rgb(255, 255, 0);*/
-font: 75 20pt &quot;맑은 고딕&quot; ;
+/*font: 75 20pt &quot;맑은 고딕&quot; ;*/
 color: rgb(255, 255, 255);
 
 
 </string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-      <widget class="QLabel" name="lb_user_name_">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>240</y>
-         <width>56</width>
-         <height>12</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>(아이디)</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_24">
-       <property name="geometry">
-        <rect>
-         <x>220</x>
-         <y>290</y>
-         <width>56</width>
-         <height>12</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>문제</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_25">
-       <property name="geometry">
-        <rect>
-         <x>340</x>
-         <y>290</y>
-         <width>56</width>
-         <height>12</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>점수</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="lb_question_num_">
-       <property name="geometry">
-        <rect>
-         <x>190</x>
-         <y>320</y>
-         <width>91</width>
-         <height>91</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(255, 238, 152);
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lb_point_num">
+        <property name="geometry">
+         <rect>
+          <x>493</x>
+          <y>150</y>
+          <width>91</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>맑은 고딕</family>
+          <pointsize>21</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">/*background-color: rgb(255, 238, 152);*/
+background-color: rgb(85, 85, 255);
 border-radius:45px;
 /*border: 1px solid rgb(255, 255, 0);*/
 /*border: 10px solid rgb(255, 255, 0);*/
-font: 75 20pt &quot;맑은 고딕&quot; ;
+/*font: 75 20pt &quot;맑은 고딕&quot; ;*/
 color: rgb(255, 255, 255);
 
 
 </string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lb_rank_num">
+        <property name="geometry">
+         <rect>
+          <x>377</x>
+          <y>150</y>
+          <width>91</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>맑은 고딕</family>
+          <pointsize>32</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">/*background-color: rgb(255, 238, 152);*/
+background-color: rgb(85, 85, 255);
+border-radius:45px;
+/*border: 1px solid rgb(255, 255, 0);*/
+/*border: 10px solid rgb(255, 255, 0);*/
+/*font: 75 20pt &quot;맑은 고딕&quot; ;*/
+color: rgb(255, 255, 255);
+
+
+</string>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lb_learning_num">
+        <property name="geometry">
+         <rect>
+          <x>257</x>
+          <y>150</y>
+          <width>91</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>맑은 고딕</family>
+          <pointsize>32</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">/*background-color: rgb(255, 238, 152);*/
+background-color: rgb(85, 85, 255);
+border-radius:45px;
+/*border: 1px solid rgb(255, 255, 0);*/
+/*border: 10px solid rgb(255, 255, 0);*/
+/*font: 75 20pt &quot;맑은 고딕&quot; ;*/
+color: rgb(255, 255, 255);
+
+
+</string>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_25">
+        <property name="geometry">
+         <rect>
+          <x>520</x>
+          <y>120</y>
+          <width>41</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>점수</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_32">
+        <property name="geometry">
+         <rect>
+          <x>403</x>
+          <y>120</y>
+          <width>41</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>랭크</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_33">
+        <property name="geometry">
+         <rect>
+          <x>267</x>
+          <y>120</y>
+          <width>71</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Alef</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>학습진도</string>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="page_27">
@@ -952,7 +1126,7 @@ color: rgb(255, 255, 255);
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page_5"/>
        <widget class="QWidget" name="page_7">
