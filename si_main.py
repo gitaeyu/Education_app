@@ -458,7 +458,7 @@ class Contents(QWidget, contents_form_class):
         # information = ["실시간채팅",보낸사람,받는사람,메세지,시간]
         time = self.lb_time.text()
         send_message = self.le_message.text()
-        information = ["실시간채팅", self.login_user[3], self.invite_sender, send_message, time]
+        information = ["실시간채팅", self.login_user[3], self.parent.signal[2], send_message, time]
         message = json.dumps(information)
         self.parent.client_socket.sendall(message.encode())
         self.le_message.clear()
@@ -541,10 +541,6 @@ class Student:
                     print(f"{self.signal[1]}님의 채팅초대")
                 elif self.signal[0] == "채팅수락": # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.contents.lw_chat.addItem(self.signal[1])
-                    if self.signal[2] == self.contents.login_user[3] :
-                        self.invite_sender = self.signal[3]
-                    else :
-                        self.invite_sender = self.signal[2]
                     self.contents.consulting = True
                     self.contents.btn_consult_end.show()
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
