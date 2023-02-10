@@ -146,9 +146,10 @@ class TeacherClass:
                 bird_question_num = cur.execute(f"SELECT * FROM member_test as a inner join test as b  \
                 on a.Test_num = b.Test_num where ID_Num = {self.parent.signal[1]} and \
                 Test_subject = '조류'")
-                information = ["학생성적반환",correct_test_question_num,Total_test_question_num,insect_correct_question_num,
-                                insect_question_num,mammal_correct_question_num,mammal_question_num,
-                               bird_correct_question_num,bird_question_num]
+                information = ["학생성적반환", correct_test_question_num, Total_test_question_num,
+                               insect_correct_question_num,
+                               insect_question_num, mammal_correct_question_num, mammal_question_num,
+                               bird_correct_question_num, bird_question_num]
                 message = json.dumps(information)
                 socket.sendall(message.encode())
     def request_student_DB(self,socket):
@@ -191,7 +192,8 @@ class TeacherClass:
                 cur.execute(sql)
                 con.commit()
 
-    def request_db_name_list(self,socket): # signal = ["DB검색요청", 종류, 검색어]
+    def request_db_name_list(self,socket):
+        # signal = ["DB검색요청", 종류, 검색어]
         print(self.parent.signal)
         # con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
         #                       db='education_app', charset='utf8')
@@ -235,8 +237,37 @@ class TeacherClass:
                 message = json.dumps(information)
                 socket.sendall(message.encode())
 
+    def request_test_stat(self, socket):
+        # signal = ["TC문제통계요청"]
+        print(self.parent.signal)
+        con = pymysql.connect(host='10.10.21.103', user='root', password='00000000',
+                              db='education_app', charset='utf8')
+        # con = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='00000000', db='education_app',
+        #                        charset='utf8')
+        with con:
+            with con.cursor() as cur:
+                sql = "select *,CAST(ROUND((f.correct/f.cnt),3) AS cHAR(30)) as rate from \
+                (select a.test_num,count(case when test_result = 'correct' then 'correct' end) as correct, \
+                count(*)as cnt, b.test_contents  from member_test as a left join test as b on a.test_num = B.test_num \
+                group by a.test_num) as f order by rate  limit 5"
+                cur.execute(sql)
+                rate_list = cur.fetchall()
+                print(rate_list)
+                sql = "select a.test_num,round(avg(a.consume_time),2) as consume_time , b.test_contents \
+                from member_test as a left join test as b on a.test_num = B.test_num  group by a.test_num \
+                order by consume_time  desc limit 5;"
+                cur.execute(sql)
+                time_list = cur.fetchall()
+                print(time_list)
+                information = ["TC문제통계반환",rate_list,time_list]
+                message = json.dumps(information)
+                socket.sendall(message.encode())
+
+
 class MultiChatServer:
+
     # 소켓을 생성하고 연결되면 accept_client() 호출
+
     def __init__(self):
         self.idlist = []
         self.clients = []
@@ -343,6 +374,7 @@ class MultiChatServer:
                         values('{self.signal[1]}','{self.signal[2]}','{self.signal[3]}','{self.signal[4]}')")
         conn.commit()
         conn.close()
+        # 희희
         information = ["가입 완료"]
         message = json.dumps(information)
         socket.send(message.encode())
@@ -359,6 +391,14 @@ class MultiChatServer:
             if count ==2 :
                 break
             i += 1
+    def consult_end(self):    # signal = ["상담종료", 보낸사람, 받는사람]
+        chat_end_temp = self.signal[0]
+        chat_end_msg = json.dumps(chat_end_temp)
+        i = 0
+        for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
+            if id[1] == self.signal[2]:
+                socket = self.clients[i]
+                socket.sendall(chat_end_msg.encode())
 
     def invite_message(self): # signal =["채팅초대", 보낸사람, 받는사람]
         i = 0
@@ -430,6 +470,8 @@ class MultiChatServer:
                     self.remove_socket(socket)
                 elif self.signal[0] == "실시간채팅" :  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
                     self.real_time_chat()
+                elif self.signal[0] == "상담종료" :    # signal = ["상담종료", 보낸사람, 받는사람]
+                    self.consult_end()
                 elif self.signal[0] == "TC답변등록" : # signal = ["TC답변등록 ,문제번호 ,답변,답변자]
                     self.teacher.entry_answer()
                 elif self.signal[0] == "SCDB 문의추가": #signal = ['SCDB 문의추가',이름,날짜,문의제목,문의내용]
@@ -450,6 +492,8 @@ class MultiChatServer:
                     self.teacher.reqeuest_student_test_result(socket)
                 elif self.signal[0] == "학습완료": # signal = ['학습완료', IDnum, contents, IDnum+contents]
                     self.student.request_learning_completed()
+                elif self.signal[0] == "TC문제통계요청":  # signal= ["TC문제통계요청"]
+                    self.teacher.request_test_stat(socket)
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해
@@ -467,15 +511,20 @@ class MultiChatServer:
         client를 제거해주면서 소켓 정보와 id 정보를 없애준다.
         또한 idlist가 갱신됐으므로 이 정보를 다시 클라이언트로 보내준다.
         """
-        try:
-            i = 0
-            for client in self.clients:  # 목록에 있는 모든 소켓에 대해
-                print(client, "고객")
-                socket = client
-                if socket == c_socket:
-                    print("소켓을 제거합니다")
-                    self.clients.remove(client)  # 소켓 제거
+        i = 0
+        for client in self.clients:  # 목록에 있는 모든 소켓에 대해
+            print(client, "고객")
+            socket = client
+            if socket == c_socket:
+                print("소켓을 제거합니다")
+                self.clients.remove(client)  # 소켓 제거
+                try:
                     self.idlist.remove(self.idlist[i])
+                except Exception as e :
+                    print(c_socket)
+                    print (e,"리무브 소켓 에러")
+                    pass
+                finally:
                     self.student_list = []
                     self.teacher_list = []
                     for i in self.idlist:
@@ -488,9 +537,7 @@ class MultiChatServer:
                     self.send_message = json.dumps(temp_msg)
                     self.send_all_client()
                     break
-                i += 1
-        except Exception as er:
-            print(er)
+            i += 1
 
 
 if __name__ == "__main__":

@@ -51,7 +51,8 @@ class Main(QMainWindow, form_class):
         # 로그인 체크
         self.le_input_PW.returnPressed.connect(self.login_check)
         self.btn_move_main.clicked.connect(self.login_check)
-
+        self.btn_logout.clicked.connect(self.btn_logout_clicked)
+        self.logout_bool = False
         # 회원가입
         self.btn_check_id.clicked.connect(self.check_id)
         self.le_input_id.returnPressed.connect(self.check_id)
@@ -81,7 +82,13 @@ class Main(QMainWindow, form_class):
         self.test_result_groupbox.hide()
         self.student_list_lw.itemClicked.connect(self.call_student_test_result)
 
-
+    def btn_logout_clicked(self):
+        self.mainstack.setCurrentIndex(0)
+        self.login_stack.setCurrentIndex(0)
+        logout_temp=['로그아웃',self.login_user[1],self.login_user[3], self.login_user[-1]] # logout_temp = ['로그아웃', ID, 이름, 학생]
+        logout_msg = json.dumps(logout_temp)
+        self.client_socket.sendall(logout_msg.encode())
+        self.logout_bool = True
 
     def call_student_test_result(self):
         self.test_result_groupbox.show()
@@ -251,10 +258,11 @@ class Main(QMainWindow, form_class):
 
 
     def on_item_clicked(self, item, column):
+        self.vis = self.vioajsojdo
         self.item = item.text(column)
 
         actions = {"점수/통계확인(학생별)": (1, self.request_student_list),
-                   "통계확인(문제별)": (2, None),
+                   "통계확인(문제별)": (2, self.request_test_statistics),
                    "Q&A": (3, self.DB_request_QNA),
                    "상담": (4, None)}
         a = item.parent()
@@ -266,9 +274,15 @@ class Main(QMainWindow, form_class):
             self.stackedWidget.setCurrentIndex(index)
             if func:
                 func()
+    def request_test_statistics(self):
+        self.test_statistics.clearContents()
+        self.test_statistics_2.clearContents()
+        information = ["TC문제통계요청"]
+        message = json.dumps(information)  # 제이슨 변환
+        self.client_socket.send(message.encode())  # 서버에 정보 전달
 
     def request_student_list(self):
-        self.student_list_lw.clear()  # 문제 등록 UI 초기화 메서드 호출
+        self.student_list_lw.clear()
         information = ["TC학생DB요청"]
         message = json.dumps(information)  # 제이슨 변환
         self.client_socket.send(message.encode())  # 서버에 정보 전달
@@ -356,11 +370,13 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "로그인 실패":
                     self.message_signal.show_message.emit("잘못 입력했습니다.\n다시 입력해주세요.")
                 elif self.signal[0] == "로그인":  # signal = ['로그인', self.student_list, self.teacher_list]
-                    print(self.signal[1])
+                    self.client_list_widget.clear()
                     for i in self.signal[1]:
                         self.client_list_widget.addItem(i[1])
-                    # 학생 혹은 선생 목록 띄우기
-                    pass
+                elif self.signal[0] == "로그아웃":  # signal = ['로그아웃', self.student_list, self.teacher_list]
+                    self.client_list_widget.clear()
+                    for i in self.signal[1]:
+                        self.client_list_widget.addItem(i[1])
                 elif self.signal[0] == "중복 없음":
                     self.message_signal.show_message.emit("사용가능한 ID 입니다.")
                     self.use_id = True
@@ -389,6 +405,33 @@ class Main(QMainWindow, form_class):
             # information = ["학생성적반환",correct_test_question_num,Total_test_question_num,insect_correct_question_num,
             # insect_question_num,mammal_correct_question_num,mammal_question_num,bird_correct_question_num,bird_question_num]
                     self.call_student_test_record()
+                elif self.signal[0] == "TC문제통계반환" : # signal = ["TC문제통계반환" , 리스트1(정답률) , 리스트2(소요시간)]
+                    self.update_test_statistics()
+    def update_test_statistics(self):
+        rate_list = self.signal[1]
+        time_list = self.signal[2]
+        self.test_statistics.clearContents()
+        self.test_statistics_2.clearContents()
+        self.test_statistics.setRowCount(len(rate_list))
+        self.test_statistics.setColumnCount(len(rate_list[0]))
+        for j in range(len(rate_list)):
+            for k in range(len(rate_list[j])):
+                self.test_statistics.setItem(j, k, QTableWidgetItem(str(rate_list[j][k])))
+
+        self.test_statistics.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.test_statistics.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.test_statistics.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.test_statistics.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.test_statistics.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+
+        self.test_statistics_2.setRowCount(len(time_list))
+        self.test_statistics_2.setColumnCount(len(time_list[0]))
+        for j in range(len(time_list)):
+            for k in range(len(time_list[j])):
+                self.test_statistics_2.setItem(j, k, QTableWidgetItem(str(time_list[j][k])))
+        for i in range(len(time_list[0])):
+            self.test_statistics_2.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
+
     def call_student_test_record(self):
         self.test_record = self.signal[1:]
         print(self.test_record)
@@ -401,19 +444,27 @@ class Main(QMainWindow, form_class):
         self.bird_correct_lbl.setText(str(self.test_record[6]))
         self.bird_all_lbl.setText(str(self.test_record[7]))
         try :
-            self.correct_rate_lbl.setText(str(round(self.test_record[0]/self.test_record[1],3)*100)+'%')
+            a = round(self.test_record[0]/self.test_record[1]*100,3)
+            print(a)
+            self.correct_rate_lbl.setText(str(a)+'%')
         except ZeroDivisionError :
             self.correct_rate_lbl.setText('')
         try :
-            self.insect_correct_rate_lbl.setText(str(round(self.test_record[2]/self.test_record[3],3)*100)+'%')
+            a = round(self.test_record[2]/self.test_record[3]*100,3)
+            print(a)
+            self.insect_correct_rate_lbl.setText(str(a)+'%')
         except ZeroDivisionError :
             self.insect_correct_rate_lbl.setText('')
         try :
-            self.mammal_correct_rate_lbl.setText(str(round(self.test_record[4]/self.test_record[5],3)*100)+'%')
+            a = round(self.test_record[4]/self.test_record[5]*100,3)
+            print(a)
+            self.mammal_correct_rate_lbl.setText(str(a)+'%')
         except ZeroDivisionError :
             self.mammal_correct_rate_lbl.setText('')
         try :
-            self.bird_correct_rate_lbl.setText(str(round(self.test_record[6]/self.test_record[7],3)*100)+'%')
+            a = round(self.test_record[6]/self.test_record[7]*100,3)
+            print(a)
+            self.bird_correct_rate_lbl.setText(str(a)+'%')
         except ZeroDivisionError :
             self.bird_correct_rate_lbl.setText('')
 
@@ -694,6 +745,22 @@ class Main(QMainWindow, form_class):
         information = ["DB설명요청", self.item, selected_item]
         message = json.dumps(information)
         self.client_socket.send(message.encode())
+    def closeEvent(self, QCloseEvent):
+        ans = QMessageBox.question(self, "종료 확인", "종료 하시겠습니까?",
+                                   QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            # if not self.logout_bool:
+            #     logout_temp = ['로그아웃', self.login_user[1], self.login_user[3], self.login_user[-1]]  # logout_temp = ['로그아웃', ID, 이름, 학생]
+            #     logout_msg = json.dumps(logout_temp)
+            #     self.client_socket.sendall(logout_msg.encode())
+            close_temp = ['종료', self.login_user[1], self.login_user[3], self.login_user[-1]]
+            close_msg = json.dumps(close_temp)
+            print('어디까지')
+            self.client_socket.sendall(close_msg.encode())
+            QCloseEvent.accept()  # 이건 QCloseEvent가 발생하면 그렇게 행하라는 거다.
+        else:
+            print('취소')
+            QCloseEvent.ignore()  # 이건 QCloseEvent가 발생하면 무시하라는 거다.
 
 if __name__ == "__main__":
     ip = '127.0.0.1'
