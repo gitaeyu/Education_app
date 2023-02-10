@@ -111,6 +111,7 @@ class Main(QMainWindow, form_class):
         self.client_socket.sendall(message.encode())
 
     def consult_end(self):
+        print(self.consulting)
         if self.consulting:
             self.lw_chat.clear()
             self.btn_consult_end.hide()
@@ -163,6 +164,7 @@ class Main(QMainWindow, form_class):
             self.client_socket.sendall(invite_already_msg.encode())
 
     def invite_OK(self):
+        self.consulting = True
         self.stackedWidget.setCurrentIndex(4)  # signal = ['채팅수락', 수락메시지, 받은 사람, 보낸사람]
         invite_OK_temp = ['채팅수락', f"{self.lb_time.text()}\n대화가 시작됩니다.", self.login_user[3], self.invite_sender]
         invite_accept_msg = json.dumps(invite_OK_temp)
@@ -407,12 +409,13 @@ class Main(QMainWindow, form_class):
                     self.recv_invite()
                 elif self.signal[0] == "채팅수락":  # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
                     self.Consult_chat_lw.addItem(self.signal[1])
+                    self.consulting = True
                     if self.signal[2] == self.login_user[3] :
                         self.invite_sender = self.signal[3]
                     else :
                         self.invite_sender = self.signal[2]
                     self.btn_consult_end.show()
-                    self.consulting = True
+
                 elif self.signal[0] == "실시간채팅":  # signal = ["실시간채팅",보낸사람,받는사람,메세지,시간]
                     self.chat_update()
                 elif self.signal[0] == "이미 채팅중":  # signal= ['이미 채팅중', '000님은\n이미 상담중입니다.', 초대받은사람, 초대한사람]
@@ -424,7 +427,7 @@ class Main(QMainWindow, form_class):
                 elif self.signal[0] == "TC문제통계반환" : # signal = ["TC문제통계반환" , 리스트1(정답률) , 리스트2(소요시간)]
                     self.update_test_statistics()
                 elif self.signal[0] == "상담종료": # signal = ["상담종료"]
-                    self.contents.consult_end()
+                    self.consult_end()
     def update_test_statistics(self):
         rate_list = self.signal[1]
         time_list = self.signal[2]

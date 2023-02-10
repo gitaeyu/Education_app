@@ -401,6 +401,7 @@ class MultiChatServer:
                 socket.sendall(invite_msg.encode())
             i += 1
     def invite_accept(self,socket): # signal = ['채팅수락', 수락메시지, 수락한 사람, 보낸 사람]
+
         i = 0
         invite_msg = json.dumps(self.signal)
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
