@@ -490,13 +490,14 @@ class MultiChatServer:
                     self.consult_end()
 
     def consult_end(self):    # signal = ["상담종료", 보낸사람, 받는사람]
-        chat_end_temp = self.signal[0]
+        chat_end_temp = [self.signal[0]]
         chat_end_msg = json.dumps(chat_end_temp)
         i = 0
         for id in self.idlist:  # 목록에 있는 모든 소켓에 대해
             if id[1] == self.signal[2]:
                 socket = self.clients[i]
                 socket.sendall(chat_end_msg.encode())
+            i+=1
 
     def send_all_client(self):
         for client in self.clients:  # 목록에 있는 모든 소켓에 대해

@@ -113,11 +113,11 @@ class Main(QMainWindow, form_class):
     def consult_end(self):
         print(self.consulting)
         if self.consulting:
-            self.lw_chat.clear()
+            self.Consult_chat_lw.clear()
             self.btn_consult_end.hide()
             self.consulting = False
         if self.signal[0] != '상담종료' :
-            consult_end_temp = ['상담종료', self.login_user[3], self.chat_partner]
+            consult_end_temp = ['상담종료', self.login_user[3], self.invite_sender]
             consult_end_msg = json.dumps(consult_end_temp)
             self.client_socket.sendall(consult_end_msg.encode())
 
